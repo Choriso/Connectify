@@ -11,21 +11,70 @@
 </head>
 <body>
 <header>
-    <nav class="navbar navbar-light bg-light">
-        <a class="navbar-brand" href="#">Наше приложение</a>
-    {% if current_user.is_authenticated %}
-        <a class="navbar-brand" href="/logout">{{ current_user.name }}</a>
-    {% else %}
-<p>
-    <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
-    <a class="btn btn-success" href="/login">Войти</a>
-</p>
-{% endif %}
+    <nav class="HeaderBar"
+         style="z-index: 10; margin-top: -100px; width: 100%; height: 72px; position: fixed; padding-left: 24px; padding-right: 24px; padding-top: 16px; padding-bottom: 16px; background: white; box-shadow: 0px 2px 8px rgba(23, 24, 28, 0.06); justify-content: space-between; align-items: center; display: inline-flex">
+        <a href="/">
+            <div class="MenuAndSearch"
+                 style="justify-content: flex-start; align-items: center; gap: 24px; display: flex">
+                <div class="Logo" style="justify-content: flex-start; align-items: center; gap: 7px; display: flex">
+                    <div class="Compass" style="width: 32px; height: 32px; position: relative">
+                        <div class="Rectangle2365"
+                             style="width: 32px; height: 32px; left: 0px; top: 0px; position: absolute; background: #17181C; border-radius: 6px"></div>
+                    </div>
+                    <div class="Connectify"
+                         style="color: #17181C; font-size: 16px; font-family: Outfit; font-weight: 400; word-wrap: break-word">
+                        Connectify
+                    </div>
+                </div>
+            </div>
+        </a>
+        <div class="Tools" style="justify-content: flex-end; align-items: center; gap: 40px; display: flex">
+            {% if current_user.is_authenticated %}
+            <a href="/profile">
+                <div class="Profile" style="justify-content: flex-start; align-items: center; gap: 12px; display: flex">
+                    <div class="Avatar"
+                         style="width: 40px; height: 40px; justify-content: center; align-items: center; display: flex">
+                        <img class="Ellipse1" style="width: 40px; height: 40px; border-radius: 9999px"
+                             src="https://via.placeholder.com/40x40"/>
+                    </div>
+                    <div class="UserName"
+                         style="justify-content: flex-start; align-items: center; gap: 4px; display: flex">
+                        <div class="Name"
+                             style="width: 72px; text-align: center; color: #17181C; font-size: 14px; font-family: Outfit; font-weight: 400; line-height: 24px; word-wrap: break-word">
+                            dfdfdf {{current_user.username}}
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% else %}
+            <p>
+                <a href="/register">
+                    <div class="Group7" style="width: 139px; height: 34px; position: relative">
+                        <div class="Rectangle2370"
+                             style="width: 139px; height: 34px; left: 0px; top: 0px; position: absolute; background: #CCE0BD; border-radius: 11px"></div>
+                        <div style="left: 9px; top: 9px; position: absolute; color: black; font-size: 12px; font-family: Outfit; font-weight: 400; word-wrap: break-word">
+                            Зарегистрироваться
+                        </div>
+                    </div>
+                </a>
+                <a href="/login">
+                    <div class="Group6" style="width: 112px; height: 34px; position: relative">
+                        <div class="Rectangle2370"
+                             style="width: 112px; height: 34px; left: 0px; top: 0px; position: absolute; background: #BDC1E0; border-radius: 11px"></div>
+                        <div style="left: 37.50px; top: 9px; position: absolute; color: black; font-size: 12px; font-family: Outfit; font-weight: 400; word-wrap: break-word">
+                            Войти
+                        </div>
+                    </div>
+                </a>
+            </p>
+            {% endif %}
+
+        </div>
+        </div>
     </nav>
 </header>
-<!-- Begin page content -->
-<main role="main" class="container">
-{% block content %}{% endblock %}
+<main role="main" class="container" style="margin-top: 100px;">
+    {% block content %}{% endblock %}
 </main>
 </body>
 </html>
