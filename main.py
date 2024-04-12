@@ -28,10 +28,60 @@ def main():
 # главная страница
 @app.route("/")
 def index():
+    # current_filter = input()
     db_sess = session.create_session()
     if current_user.is_authenticated:
         interests = db_sess.query(Interest)
+        # if current_filter:
+        #     interests = db_sess.query(Interest).filter(current_filter in Interest.tags)
     return render_template("index.html")
+
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    db_sess = session.create_session()
+    user = db_sess.query(User).get(current_user)
+    interest = db_sess.query(Interest).filter(Interest.user == current_user)
+    return render_template('profile.html', title='Профиль')
+
+
+@app.route('/profile/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_profile(id):
+    form = RegisterForm()
+    if request.method == "GET":
+        db_sess = session.create_session()
+        user = db_sess.query(User).filter(User.id == id).first()
+        if user:
+            user.email.data = user.email
+            form.password.data = user.password
+            form.name.data = user.name
+            form.information.data = user.information
+            form.connection.data = user.connection
+            form.image.data = user.image
+            form.is_allow_gps = user.is_allow_gps
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        db_sess = session.create_session()
+        user = db_sess.query(Interest).filter(User.id == id).first()
+        if user:
+            user.email = user.email.data
+            user.password = form.password.data
+            user.name = form.name.data
+            user.information = form.information.data
+            user.connection = form.connection.data
+            user.image = form.image.data
+            user.is_allow_gps = form.is_allow_gps
+            db_sess.commit()
+            return redirect('/profile')
+        else:
+            abort(404)
+    return render_template('register.html',
+                           title='Редактирование интереса',
+                           form=form
+                           )
 
 
 # регистрация пользователя
@@ -90,7 +140,7 @@ def logout():
 # добавление интереса
 @app.route('/interest',  methods=['GET', 'POST'])
 @login_required
-def add_news():
+def add_interest():
     form = InterestForm()
     if form.validate_on_submit():
         db_sess = session.create_session()
@@ -112,7 +162,7 @@ def edit_news(id):
     form = InterestForm()
     if request.method == "GET":
         db_sess = session.create_session()
-        interest = db_sess.query(Interest).filter(Interest.id == id, Interest.user == current_user ).first()
+        interest = db_sess.query(Interest).filter(Interest.id == id, Interest.user == current_user).first()
         if interest:
             form.title.data = interest.title
             form.description.data = interest.description
