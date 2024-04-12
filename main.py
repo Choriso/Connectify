@@ -30,8 +30,8 @@ def main():
 def index():
     db_sess = session.create_session()
     if current_user.is_authenticated:
-        interests = db_sess.query(Interest)
-    return render_template("index.html")
+        interest = db_sess.query(Interest)
+    return render_template("index.html", interest=interest)
 
 
 # регистрация пользователя
@@ -88,21 +88,25 @@ def logout():
 
 
 # добавление интереса
-@app.route('/interest',  methods=['GET', 'POST'])
+@app.route('/interest', methods=['GET', 'POST'])
 @login_required
 def add_news():
-    form = InterestForm()
-    if form.validate_on_submit():
-        db_sess = session.create_session()
-        interest = Interest()
-        interest.title = form.title.data
-        interest.description = form.description.data
-        current_user.interest.append(interest)
-        db_sess.merge(current_user)
-        db_sess.commit()
-        return redirect('/index')
-    return render_template('interest.html', title='Добавление интереса',
-                           form=form)
+    return render_template('interest.html', title='Добавление интереса')
+
+
+@app.route('/process_interest', methods=['POST'])
+def process_interest():
+    title = request.form['title']
+    description = request.form['description']
+    print(title, description)
+    db_sess = session.create_session()
+    interest = Interest()
+    interest.title = title
+    interest.description = description
+    current_user.interests.append(interest)
+    db_sess.merge(current_user)
+    db_sess.commit()
+    return redirect('/')
 
 
 # редактирование интереса
@@ -112,7 +116,7 @@ def edit_news(id):
     form = InterestForm()
     if request.method == "GET":
         db_sess = session.create_session()
-        interest = db_sess.query(Interest).filter(Interest.id == id, Interest.user == current_user ).first()
+        interest = db_sess.query(Interest).filter(Interest.id == id, Interest.user == current_user).first()
         if interest:
             form.title.data = interest.title
             form.description.data = interest.description
@@ -141,8 +145,8 @@ def edit_news(id):
 def news_delete(id):
     db_sess = session.create_session()
     interest = db_sess.query(Interest).filter(Interest.id == id,
-                                      Interest.user == current_user
-                                      ).first()
+                                              Interest.user == current_user
+                                              ).first()
     if interest:
         db_sess.delete(interest)
         db_sess.commit()
