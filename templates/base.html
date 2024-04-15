@@ -7,9 +7,10 @@
           href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
           crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/static/CSS/style.css">
     <title>{{title}}</title>
 </head>
-<body>
+<body style="background-color: #FBFBFB;">
 <header>
     <nav class="HeaderBar"
          style="z-index: 10; margin-top: -100px; width: 100%; height: 72px; position: fixed; padding-left: 24px; padding-right: 24px; padding-top: 16px; padding-bottom: 16px; background: white; box-shadow: 0px 2px 8px rgba(23, 24, 28, 0.06); justify-content: space-between; align-items: center; display: inline-flex">
@@ -41,7 +42,7 @@
                          style="justify-content: flex-start; align-items: center; gap: 4px; display: flex">
                         <div class="Name"
                              style="width: 72px; text-align: center; color: #17181C; font-size: 14px; font-family: Outfit; font-weight: 400; line-height: 24px; word-wrap: break-word">
-                            dfdfdf {{current_user.username}}
+                            {{current_user.username}}
                         </div>
                     </div>
                 </div>

@@ -31,7 +31,7 @@ def index():
     db_sess = session.create_session()
     if current_user.is_authenticated:
         interest = db_sess.query(Interest)
-    return render_template("index.html", interest=interest)
+    return render_template("index.html", interest=interest, current_user=current_user)
 
 
 # регистрация пользователя
