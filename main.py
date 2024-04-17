@@ -33,6 +33,13 @@ def index():
         interest = db_sess.query(Interest)
     return render_template("index.html", interest=interest, current_user=current_user)
 
+@app.route('/geolocation')
+def geolocation():
+    return render_template('geolocation_ip.html')
+
+@app.route('/viewInteres')
+def viewInteres():
+    return render_template('view_interes.html')
 
 # регистрация пользователя
 @app.route('/register', methods=['GET', 'POST'])

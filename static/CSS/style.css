@@ -120,3 +120,12 @@
     color: #17181c;
     margin: 10px
 }
+
+.rect{
+    border-radius: 16px;
+    width: 616px;
+    height: 154px;
+    background: #fbfbfbc2;
+    margin: 16px;
+    margin-left: 87px;
+}

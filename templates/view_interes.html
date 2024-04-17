@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="width: 840.50px; height: 545.50px; position: relative; top: 18%; left: 31%; position: absolute;">
+    <div class="figure">
+        <img src="{{ url_for('static', filename='images/waves_3.svg') }}" alt="Ваше изображение"
+             style="width: 840px; height: 545px; position: fixed; z-index: -1;">
+    </div>
+    <div class="rect" style="width: 615px; height: 42px; margin-top: 80px;">
+        <div class="InteresTittel"
+             style="left: 98px; top: 115px; position: absolute; text-align: right; color: black; font-size: 16px; font-family: Outfit; font-weight: 400; word-wrap: break-word">
+            {{tittle}}
+        </div>
+    </div>
+    <div class="rect" style="width: 614px; height: 113px;">
+        <div class="Text"
+             style="padding-top: 5px; padding-left: 14px; position: absolute; text-align: right; color: black; font-size: 16px; word-wrap: break-word">
+            Описание:
+        </div>
+        <div style="width: 570px; height: 50px; border-radius: 6px; border: 1px #1D1D1D solid; position: absolute; margin: 14px; margin-top: 35px;"></div>
+    </div>
+    <div class="rect" style="width: 616px; height: 154px;">
+        <div style="width: 171px; height: 40px; left: 98px; top: 273px; position: absolute">
+            <img class="Avatar"
+                 style="width: 40px; height: 40px; margin: 16px; position: absolute; border-radius: 9999px"
+                 src="https://via.placeholder.com/40x40"/>
+            <div class="text"
+                 style="left: 61px; top: 10px; position: absolute; text-align: right; color: black; font-size: 16px; word-wrap: break-word">
+                {{name}}
+            </div>
+        </div>
+        <div style="width: 570px; height: 50px; left: 101px; top: 198px; position: absolute">
+
+            <div class="text"
+                 style="left: 15px; top: 17px; position: absolute; text-align: right; color: black; font-size: 16px; word-wrap: break-word">
+                {{Description}}
+            </div>
+        </div>
+        <div style="width: 395.96px; height: 160.37px; left: 101px; top: 338px; position: absolute">
+            <div class="text"
+                 style="width: 390.96px; height: 117.37px; left: 5px; top: 43px; position: absolute; color: rgba(0, 0, 0, 0.40); font-size: 12px; word-wrap: break-word">
+                {{contacts}}
+            </div>
+            <div class="text"
+                 style="left: 0px; top: 0px; position: absolute; text-align: right; color: black; font-size: 16px; word-wrap: break-word">
+                Контакты:
+            </div>
+        </div>
+    </div>
+    <div class="btn" style="background: #c1c2b561; padding: 9px 12px;" onclick="cancel()">
+        <div class="Text">
+            Назад
+        </div>
+    </div>
+</div>
+<div class="figure">
+    <img src="{{ url_for('static', filename='images/waves.svg') }}" alt="Ваше изображение"
+         style="z-index: -1; transform: rotate(180deg); right: 82%; top: 0%; position: fixed; height: 1041px; width: 1039px;">
+</div>
+<div class="figure">
+    <img src="{{ url_for('static', filename='images/waves.svg') }}" alt="Ваше изображение"
+         style="right: -22%; top: 15%; position: fixed; height: 1041px; width: 1039px; z-index: -1;">
+</div>
+<div class="figure">
+    <img src="{{ url_for('static', filename='images/waves_2.svg') }}" alt="Ваше изображение"
+         style="right: 2%; top: 25%; position: fixed; height: 1041px; width: 1039px; z-index: -1;">
+</div>
+<div class="figure">
+    <img src="{{ url_for('static', filename='images/waves_2.svg') }}" alt="Ваше изображение"
+         style="right: 62%; top: -20%; position: fixed; height: 700px; width: 700x; z-index: -1;">
+</div>
+
+</div>
+<script>
+    function cancel() {
+        window.history.back();
+    }
+
+</script>
+{% endblock %}

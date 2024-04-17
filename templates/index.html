@@ -25,11 +25,13 @@
                     {{item.description}}
                 </div>
             </div>
-            <div class="btn" style="background: #c1c2b561; padding: 9px 12px;">
+            <a href="/viewInteres" style="color: black">
+            <div  class="btn" style="background: #c1c2b561; padding: 9px 12px;" >
                 <div class="Text">
                     <u>Посмотреть</u>
                 </div>
             </div>
+            <a/>
     </div>
 
     {% if current_user.is_authenticated and current_user == item.user %}
