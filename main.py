@@ -41,9 +41,9 @@ def index():
 @login_required
 def profile():
     db_sess = session.create_session()
-    user = db_sess.query(User).get(current_user)
+    user = db_sess.query(User).get(current_user.id)
     interest = db_sess.query(Interest).filter(Interest.user == current_user)
-    return render_template('profile.html', title='Профиль')
+    return render_template('profile.html', title='Профиль', interest=interest)
 
 
 @app.route('/profile/<int:id>', methods=['GET', 'POST'])
