@@ -122,3 +122,4 @@ def similar(line_1, line_2):
     average_line_2 = sum(line_2_sim) / len(line_2_sim)
 
     return cosdis(average_line_1, average_line_2)
+print(similar('челолвека', 'люди'))

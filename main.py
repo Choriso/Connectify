@@ -5,7 +5,7 @@ from data.interest import Interest
 from forms.interest import InterestForm
 from forms.user import RegisterForm, LoginForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-
+from get_similar import similar
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
@@ -29,6 +29,7 @@ def main():
 @app.route("/")
 def index():
     db_sess = session.create_session()
+    interest = db_sess.query(Interest)
     if current_user.is_authenticated:
         interest = db_sess.query(Interest)
     return render_template("index.html", interest=interest, current_user=current_user)
@@ -39,9 +40,12 @@ def geolocation():
     return render_template('geolocation_ip.html')
 
 
-@app.route('/viewInteres')
+@app.route('/viewInteres', methods=['GET'])
 def viewInteres():
-    return render_template('view_interes.html')
+    db_sess = session.create_session()
+    interest = db_sess.query(Interest).filter(Interest.id == id).first()
+    user = db_sess.query(User).get(interest.user_id).first()
+    return render_template('view_interes.html', title="", interests=interest, user=user)
 
 
 # регистрация пользователя
@@ -63,7 +67,7 @@ def reqister():
             email=form.email.data,
             information=form.information.data,
             connection=form.connection.data,
-            image=form.image.data,
+            image=form.request.files['file'].read(),
             is_allow_gps=form.is_allow_gps.data
         )
         user.set_password(form.password.data)
@@ -75,9 +79,25 @@ def reqister():
 
 @app.route('/search', methods=['GET'])
 def search():
-    query = request.args.get('q')  # Получаем значение из параметра 'q' в запросе
+    query = request.args.get('q')
+    db_sess = session.create_session()
+    # Получаем значение из параметра 'q' в запросе
     # Здесь можно выполнить логику обработки запроса, например, выполнить поиск в базе данных или другие действия
     return f'Вы выполнили поиск по запросу: {query}'
+    if query:
+        all_interests = db_sess.query(Interest)
+        interest_searched = []
+        searched = False
+        for i in all_interests:
+            for w in i.title:
+                if similar(query, w) > 0.6:
+                    searched = True
+            for w in i.description:
+                if similar(query, w) > 0.6:
+                    searched = True
+            if searched:
+                interest_searched.append(i)
+        return render_template("index.html", interests=interest_searched)
 
 
 # вход в учётную запись
