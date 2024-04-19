@@ -33,13 +33,16 @@ def index():
         interest = db_sess.query(Interest)
     return render_template("index.html", interest=interest, current_user=current_user)
 
+
 @app.route('/geolocation')
 def geolocation():
     return render_template('geolocation_ip.html')
 
+
 @app.route('/viewInteres')
 def viewInteres():
     return render_template('view_interes.html')
+
 
 # регистрация пользователя
 @app.route('/register', methods=['GET', 'POST'])
@@ -68,6 +71,13 @@ def reqister():
         db_sess.commit()
         return redirect('/login')
     return render_template('register.html', title='Регистрация', form=form)
+
+
+@app.route('/search', methods=['GET'])
+def search():
+    query = request.args.get('q')  # Получаем значение из параметра 'q' в запросе
+    # Здесь можно выполнить логику обработки запроса, например, выполнить поиск в базе данных или другие действия
+    return f'Вы выполнили поиск по запросу: {query}'
 
 
 # вход в учётную запись

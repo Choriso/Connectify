@@ -9,6 +9,12 @@
         Новый интерес
     </div>
 </a>
+<form action="/search" method="get" class="search-form">
+    <div class="input-group" style="width: 90%;">
+        <input type="text" class="form-control search-input" style="border-radius: 30px;" name="q" placeholder="Поиск по сайту" aria-label="Поиск">
+        <button class="btn" style="margin-top: -3px; margin-left: 3px; transform: scale(0.9);" type="submit">Найти</button>
+    </div>
+</form>
 {% endif %}
 {% for item in interest %}
 <div style="overflow: visible; margin-top: 10px; position: relative; background: #d1d7dda3; border-radius: 16px; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex; padding: 16px">
@@ -26,12 +32,12 @@
                 </div>
             </div>
             <a href="/viewInteres" style="color: black">
-            <div  class="btn" style="background: #c1c2b561; padding: 9px 12px;" >
-                <div class="Text">
-                    <u>Посмотреть</u>
+                <div class="btn" style="padding: 9px 12px;">
+                    <div class="Text">
+                        <u>Посмотреть</u>
+                    </div>
                 </div>
-            </div>
-            <a/>
+                <a/>
     </div>
 
     {% if current_user.is_authenticated and current_user == item.user %}

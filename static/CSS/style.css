@@ -53,6 +53,9 @@
     height: 50px;
     background: #f1f1f1;
 }
+.btn:hover{
+    background-color: #b7b7b7;
+}
 
 .btn-save {
     width: 143px;
@@ -61,6 +64,7 @@
     top: 477px;
     position: absolute;
 }
+
 .btn-save-bg{
     width: 143px;
     height: 50px;
@@ -71,7 +75,9 @@
     border-radius: 44px;
     cursor: pointer;
 }
-
+.btn-save-bg:hover{
+    background: #93dd8a61;
+}
 .btn-cansel {
     width: 143px;
     height: 50px;
@@ -79,6 +85,7 @@
     left: 175px;
     top: 485px;
 }
+
 .btn-cansel-bg{
     width: 143px;
     height: 50px;
@@ -86,6 +93,9 @@
     background: #c1c2b561;
     border-radius: 44px;
     cursor: pointer;
+}
+.btn-cansel-bg:hover{
+    background: #c36b6b61;
 }
 
 }
@@ -106,11 +116,13 @@
     padding-bottom: 10px;
     background: #c1c2b542;
     border-radius: 8px;
-    border: 1px black solid;
     justify-content: flex-start;
     align-items: center;
     gap: 8px;
     display: inline-flex;
+}
+.btn-createInterest:hover{
+    background: #c1c2b5
 }
 
 .text{
