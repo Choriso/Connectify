@@ -5,7 +5,7 @@ from data.interest import Interest
 from forms.interest import InterestForm
 from forms.user import RegisterForm, LoginForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from get_similar import similar
+from get_similar import line_vector, cosdis
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
@@ -67,7 +67,7 @@ def reqister():
             email=form.email.data,
             information=form.information.data,
             connection=form.connection.data,
-            image=form.request.files['file'].read(),
+            image=form.image.data,
             is_allow_gps=form.is_allow_gps.data
         )
         user.set_password(form.password.data)
@@ -79,25 +79,21 @@ def reqister():
 
 @app.route('/search', methods=['GET'])
 def search():
+    SIMILAR_RATIO = 0.5
     query = request.args.get('q')
+    if query == "все":
+        return redirect("/")
     db_sess = session.create_session()
-    # Получаем значение из параметра 'q' в запросе
-    # Здесь можно выполнить логику обработки запроса, например, выполнить поиск в базе данных или другие действия
-    return f'Вы выполнили поиск по запросу: {query}'
     if query:
+        vector_query = line_vector(query)
         all_interests = db_sess.query(Interest)
         interest_searched = []
-        searched = False
         for i in all_interests:
-            for w in i.title:
-                if similar(query, w) > 0.6:
-                    searched = True
-            for w in i.description:
-                if similar(query, w) > 0.6:
-                    searched = True
-            if searched:
+            if cosdis(vector_query, line_vector(i.title)) > SIMILAR_RATIO:
                 interest_searched.append(i)
-        return render_template("index.html", interests=interest_searched)
+            elif cosdis(vector_query, line_vector(i.description)) > SIMILAR_RATIO:
+                interest_searched.append(i)
+        return render_template("index.html", interest=interest_searched)
 
 
 # вход в учётную запись

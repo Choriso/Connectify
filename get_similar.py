@@ -2,6 +2,7 @@ import gensim.downloader as api
 import pymorphy3
 import numpy as np
 from spellchecker import SpellChecker
+from functools import lru_cache
 
 spell = SpellChecker(language='ru')
 morph = pymorphy3.MorphAnalyzer()
@@ -22,7 +23,10 @@ def correct_text(text):
     corrected_text = []
     for word in words:
         corrected_text.append(spell.correction(word))
-    return ' '.join(corrected_text)
+    try:
+        return ' '.join(corrected_text)
+    except TypeError:
+        return text
 
 
 def get_part_of_speech(word):
@@ -53,6 +57,7 @@ def get_base_form(word):
     return parsed_word.normal_form
 
 
+@lru_cache(maxsize=None)
 def word2vec(word):
     """
     Функция, возвращающая вектор слова.
@@ -66,7 +71,7 @@ def word2vec(word):
     try:
         return model[word]
     except KeyError:
-        return 0
+        return np.zeros(model.vector_size)
 
 
 def cosdis(v1, v2):
@@ -87,39 +92,24 @@ def cosdis(v1, v2):
     return cosine_sim
 
 
-def similar(line_1, line_2):
+def line_vector(line):
     """
-    Рассчитайте сходство между двумя строками текста на основе векторов слов.
+     Вычислите векторное представление данной строки, суммируя векторы ее слов.
 
-    Параметры:
-        line_1 (str): первая строка текста для сравнения.
-        line_2 (str): вторая строка текста для сравнения.
+     Параметры:
+         строка (str): строка текста, для которой вычисляется векторное представление.
 
-    Возврат:
-        float: значение с плавающей запятой, представляющее сходство между двумя входными строками.
-    """
-    line_1 = correct_text(line_1)
-    line_2 = correct_text(line_2)
-    line_1_sim, line_2_sim = [], []
-    for word in line_1.split():
+     Возврат:
+         float: векторное представление строки, вычисляемое путем суммирования векторов ее слов. Возвращает 0,0, если векторы не найдены.
+     """
+    line = correct_text(line)
+    line_sim = []
+    for word in line.split():
         base_form = get_base_form(word)
         part_of_speech = get_part_of_speech(word)
         if base_form and part_of_speech:
             vector = word2vec(f"{base_form}_{part_of_speech}")
-            line_1_sim.append(vector)
-
-    for word in line_2.split():
-        base_form = get_base_form(word)
-        part_of_speech = get_part_of_speech(word)
-        if base_form and part_of_speech:
-            vector = word2vec(f"{base_form}_{part_of_speech}")
-            line_2_sim.append(vector)
-
-    if not line_1_sim or not line_2_sim:
+            line_sim.append(vector)
+    if not line_sim:
         return 0.0
-
-    average_line_1 = sum(line_1_sim) / len(line_1_sim)
-    average_line_2 = sum(line_2_sim) / len(line_2_sim)
-
-    return cosdis(average_line_1, average_line_2)
-print(similar('челолвека', 'люди'))
+    return sum(line_sim) / len(line_sim)
