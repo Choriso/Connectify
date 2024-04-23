@@ -87,13 +87,16 @@ def search():
     if query:
         vector_query = line_vector(query)
         all_interests = db_sess.query(Interest)
-        interest_searched = []
+        interest_searched = {}
         for i in all_interests:
-            if cosdis(vector_query, line_vector(i.title)) > SIMILAR_RATIO:
-                interest_searched.append(i)
-            elif cosdis(vector_query, line_vector(i.description)) > SIMILAR_RATIO:
-                interest_searched.append(i)
-        return render_template("index.html", interest=interest_searched)
+            tittle_cos = cosdis(vector_query, line_vector(i.title))
+            disc_cos = cosdis(vector_query, line_vector(i.description))
+            if tittle_cos > SIMILAR_RATIO:
+                interest_searched[i] = tittle_cos
+            elif disc_cos > SIMILAR_RATIO:
+                interest_searched[i] = disc_cos
+        sorted_interests = [i[0] for i in sorted(interest_searched.items(), key=lambda item: item[1])][::-1]
+        return render_template("index.html", interest=sorted_interests)
 
 
 # вход в учётную запись
