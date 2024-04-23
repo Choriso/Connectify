@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request, make_response, session, abort
+from flask import Flask, render_template, redirect, request, make_response, session, abort, url_for
 from data import session
 from data.user import User
 from data.interest import Interest
@@ -6,6 +6,7 @@ from forms.interest import InterestForm
 from forms.user import RegisterForm, LoginForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from get_similar import line_vector, cosdis
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
@@ -75,6 +76,15 @@ def reqister():
         db_sess.commit()
         return redirect('/login')
     return render_template('register.html', title='Регистрация', form=form)
+
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    db_sess = session.create_session()
+    user = db_sess.query(User).get(current_user.id)
+    interest = db_sess.query(Interest).filter(Interest.user == current_user)
+    return render_template('profile.html', title='Профиль', interest=interest, current_user=current_user)
 
 
 @app.route('/search', methods=['GET'])
@@ -188,7 +198,11 @@ def news_delete(id):
         db_sess.commit()
     else:
         abort(404)
-    return redirect('/')
+    previous_page = request.referrer
+    if previous_page:
+        return redirect(previous_page)
+    else:
+        return redirect(url_for('index'))
 
 
 @app.route("/cookie_test")

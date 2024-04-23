@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<a href="interest" class="btn-createInterest">
+    <div class="Text" style="width: 188px; text-align: center; color: black; font-size: 14px;">
+        Новый интерес
+    </div>
+</a>
+<div style="width: 152%; position: relative; left: -314px; height: 258px; background: #d1d7dda3; border-radius: 16px; display: flex; align-items: center; margin: 30px; background-color: #c3c7c7">
+    <div style="width: 229px; height: 229px; justify-content: center; align-items: center; display: inline-flex;">
+        <img style="width: 229px; height: 229px; border-radius: 9999px;" src="https://via.placeholder.com/229x229"/>
+    </div>
+    <div style="margin-left: 20px;">
+        <div style="width: 314px; height: 41px; position: relative; margin-bottom: 10px;">
+            <div style="width: 314px; height: 41px; background: #F1F1F1; border-radius: 14px;"></div>
+            <div class="Text" style="position: absolute; left: 9px; top: 8px; color: black; font-size: 12px; line-height: 24px;">
+                Имя:
+            </div>
+            <div class="Text" style="position: absolute; left: 199px; top: 12px; color: rgba(0, 0, 0, 0.40); font-size: 12px;">
+                {{current_user.username}}
+            </div>
+            <div style="width: 263.50px; height: 201px; background: #F1F1F1; border-radius: 14px;"></div>
+            <div class="Text" style="position: absolute; width: 390.96px; height: 117.37px; left: 25.22px; top: 60.15px; color: rgba(0, 0, 0, 0.40); font-size: 12px; word-wrap: break-word;">
+                {{current_user.connection}}
+            </div>
+            <div class="Text" style="position: absolute; width: 74px; height: 27px; left: 13px; top: 15px; color: black; font-size: 12px; line-height: 24px;">
+                Контакты:
+        </div>
+    </div>
+    <div style="top: 7%; left: 50%; width: 314px; height: 137px; position: relative;">
+        <div style="width: 385px; height: 221px; background: #F1F1F1; border-radius: 14px;"></div>
+        <div class="Text" style="position: absolute; left: 9px; top: 10px; color: black; font-size: 12px; line-height: 24px;">
+            Описание:
+        </div>
+        <div contenteditable class="Text" style="overflow: scroll; position: absolute; width: 279px; height: 80px; left: 18px; top: 41px; color: rgba(0, 0, 0, 0.40); font-size: 12px; word-wrap: break-word;">
+            {{current_user.information}}
+        </div>
+    </div>
+    <div style="margin-left: 5%;">
+        </div>
+            <div class="Text"  style="transform: rotateZ(-90deg); position: absolute; left: 68%; top: 115px; font-weight: bold; color: black; font-size: 12px; letter-spacing: 6.84px; word-wrap: break-word;">
+                Местоположение
+            </div>
+            <div id="map" style="overflow: hidden; position: relative; top: -127px; left: 1023px; border-radius: 16px; width: 400px; height: 225px;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="Text" style="position: relative; font-size: 31px; font-weight: bold; left: 35%;">Мои Интересы</div>
+{% for item in interest %}
+<div style="overflow: visible; margin-top: 10px; position: relative; background: #d1d7dda3; border-radius: 16px; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex; padding: 16px">
+    <div class="interes-main-info"
+         style="overflow: visible; width: 959px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 12px; display: inline-flex">
+        <a href="/" style="color: black">
+            <div class="Text" style="font-weight: bold;">
+                {{item.title}}
+            </div>
+            <a/>
+            <div class="Preview"
+                 style="margin-block-end: 16px; overflow: visible; width: 959px; padding: 16px; background: #fbfbfbc2; border-radius: 12px; border: 1px #E4E5E9 solid">
+                <div class="Text" style="max-width: 924px; word-wrap: break-word;">
+                    {{item.description}}
+                </div>
+            </div>
+            <a href="/interest_delete/{{ item.id }}" style="color: black">
+                <div class="btn" style="padding: 9px 12px;">
+                    <div class="Text">
+                        <u>Удалить</u>
+                    </div>
+                </div>
+                <a/>
+        </div>
+</div>
+{% endfor %}
+<div class="figure">
+    <img src="{{ url_for('static', filename='images/waves.svg') }}" alt="Ваше изображение"
+         style="z-index: -1; transform: rotate(180deg); right: 82%; top: 0%; position: fixed; height: 1041px; width: 1039px;">
+</div>
+<div class="figure">
+    <img src="{{ url_for('static', filename='images/waves.svg') }}" alt="Ваше изображение"
+         style="right: -22%; top: 15%; position: fixed; height: 1041px; width: 1039px; z-index: -1;">
+</div>
+<div class="figure">
+    <img src="{{ url_for('static', filename='images/waves_2.svg') }}" alt="Ваше изображение"
+         style="right: 2%; top: 25%; position: fixed; height: 1041px; width: 1039px; z-index: -1;">
+</div>
+<div class="figure">
+    <img src="{{ url_for('static', filename='images/waves_2.svg') }}" alt="Ваше изображение"
+         style="right: 62%; top: -20%; position: fixed; height: 700px; width: 700x; z-index: -1;">
+</div>
+{% endblock %}
