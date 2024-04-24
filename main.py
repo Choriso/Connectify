@@ -5,7 +5,7 @@ from data.interest import Interest
 from forms.interest import InterestForm
 from forms.user import RegisterForm, LoginForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-
+from get_similar import similar
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
@@ -28,62 +28,24 @@ def main():
 # главная страница
 @app.route("/")
 def index():
-    # current_filter = input()
     db_sess = session.create_session()
-    interests = db_sess.query(Interest)
+    interest = db_sess.query(Interest)
     if current_user.is_authenticated:
-        pass
-        # if current_filter:
-        #     interests = db_sess.query(Interest).filter(current_filter in Interest.tags)
-    return render_template("index.html", title="Connectify", interest=interests)
+        interest = db_sess.query(Interest)
+    return render_template("index.html", interest=interest, current_user=current_user)
 
 
-@app.route('/profile', methods=['GET', 'POST'])
-@login_required
-def profile():
+@app.route('/geolocation')
+def geolocation():
+    return render_template('geolocation_ip.html')
+
+
+@app.route('/viewInteres', methods=['GET'])
+def viewInteres():
     db_sess = session.create_session()
-    user = db_sess.query(User).get(current_user).first()
-    print(user)
-    interest = db_sess.query(Interest).filter(Interest.user == current_user)
-    return render_template('profile.html', title='Профиль', interest=interest, user=user)
-
-
-@app.route('/profile/<int:id>', methods=['GET', 'POST'])
-@login_required
-def edit_profile(id):
-    form = RegisterForm()
-    if request.method == "GET":
-        db_sess = session.create_session()
-        user = db_sess.query(User).filter(User.id == id).first()
-        if user:
-            user.email.data = user.email
-            form.password.data = user.password
-            form.name.data = user.name
-            form.information.data = user.information
-            form.connection.data = user.connection
-            form.image.data = user.image
-            form.is_allow_gps = user.is_allow_gps
-        else:
-            abort(404)
-    if form.validate_on_submit():
-        db_sess = session.create_session()
-        user = db_sess.query(Interest).filter(User.id == id).first()
-        if user:
-            user.email = user.email.data
-            user.password = form.password.data
-            user.name = form.name.data
-            user.information = form.information.data
-            user.connection = form.connection.data
-            user.image = form.image.data
-            user.is_allow_gps = form.is_allow_gps
-            db_sess.commit()
-            return redirect('/profile')
-        else:
-            abort(404)
-    return render_template('register.html',
-                           title='Редактирование интереса',
-                           form=form
-                           )
+    interest = db_sess.query(Interest).filter(Interest.id == id).first()
+    user = db_sess.query(User).get(interest.user_id).first()
+    return render_template('view_interes.html', title="", interests=interest, user=user)
 
 
 # регистрация пользователя
@@ -105,7 +67,7 @@ def reqister():
             email=form.email.data,
             information=form.information.data,
             connection=form.connection.data,
-            image=request.files['file'].read(),
+            image=form.request.files['file'].read(),
             is_allow_gps=form.is_allow_gps.data
         )
         user.set_password(form.password.data)
@@ -113,6 +75,29 @@ def reqister():
         db_sess.commit()
         return redirect('/login')
     return render_template('register.html', title='Регистрация', form=form)
+
+
+@app.route('/search', methods=['GET'])
+def search():
+    query = request.args.get('q')
+    db_sess = session.create_session()
+    # Получаем значение из параметра 'q' в запросе
+    # Здесь можно выполнить логику обработки запроса, например, выполнить поиск в базе данных или другие действия
+    return f'Вы выполнили поиск по запросу: {query}'
+    if query:
+        all_interests = db_sess.query(Interest)
+        interest_searched = []
+        searched = False
+        for i in all_interests:
+            for w in i.title:
+                if similar(query, w) > 0.6:
+                    searched = True
+            for w in i.description:
+                if similar(query, w) > 0.6:
+                    searched = True
+            if searched:
+                interest_searched.append(i)
+        return render_template("index.html", interests=interest_searched)
 
 
 # вход в учётную запись
@@ -140,21 +125,25 @@ def logout():
 
 
 # добавление интереса
-@app.route('/interest',  methods=['GET', 'POST'])
+@app.route('/interest', methods=['GET', 'POST'])
 @login_required
-def add_interest():
-    form = InterestForm()
-    if form.validate_on_submit():
-        db_sess = session.create_session()
-        interest = Interest()
-        interest.title = form.title.data
-        interest.description = form.description.data
-        current_user.interest.append(interest)
-        db_sess.merge(current_user)
-        db_sess.commit()
-        return redirect('/index')
-    return render_template('interest.html', title='Добавление интереса',
-                           form=form)
+def add_news():
+    return render_template('interest.html', title='Добавление интереса')
+
+
+@app.route('/process_interest', methods=['POST'])
+def process_interest():
+    title = request.form['title']
+    description = request.form['description']
+    print(title, description)
+    db_sess = session.create_session()
+    interest = Interest()
+    interest.title = title
+    interest.description = description
+    current_user.interests.append(interest)
+    db_sess.merge(current_user)
+    db_sess.commit()
+    return redirect('/')
 
 
 # редактирование интереса
@@ -193,8 +182,8 @@ def edit_news(id):
 def news_delete(id):
     db_sess = session.create_session()
     interest = db_sess.query(Interest).filter(Interest.id == id,
-                                      Interest.user == current_user
-                                      ).first()
+                                              Interest.user == current_user
+                                              ).first()
     if interest:
         db_sess.delete(interest)
         db_sess.commit()
