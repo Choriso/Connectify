@@ -3,9 +3,53 @@
     height: 549px;
     transform: translate(43%, 22%);
 }
+
+/* Кнопка выпадающего списка */
+.dropbtn {
+  background: #c1c2b542;
+  color: black;
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 12px;
+  border: none;
+}
+
+/* Контейнер <div> - необходим для размещения выпадающего содержимого */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Выпадающее содержимое (скрыто по умолчанию) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+/* Ссылки внутри выпадающего списка */
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+/* Изменение цвета выпадающих ссылок при наведении курсора */
+.dropdown-content a:hover {background-color: #ddd;}
+
+/* Показать выпадающее меню при наведении курсора */
+.dropdown:hover .dropdown-content {display: block;}
+
+/* Изменение цвета фона кнопки раскрывающегося списка при отображении содержимого раскрывающегося списка */
+.dropdown:hover .dropbtn {background-color: #c1c2b5;}
+
 .background {
     width: 622px;
-    height: 549px;
+    height: 454px;
     left: 0px;
     top: 0px;
     position: absolute;
@@ -61,10 +105,19 @@
     width: 143px;
     height: 50px;
     left: -3px;
-    top: 477px;
+    top: 376px;
     position: absolute;
 }
-
+.edit-container {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 10px;
+    display: none;
+}
 .btn-save-bg{
     width: 143px;
     height: 50px;
@@ -83,7 +136,7 @@
     height: 50px;
     position: absolute;
     left: 175px;
-    top: 485px;
+    top: 385px;
 }
 
 .btn-cansel-bg{

@@ -138,7 +138,15 @@ def logout():
 @login_required
 def add_news():
     return render_template('interest.html', title='Добавление интереса')
-
+@app.route('/process_profile', methods=['POST'])
+def process_profile():
+    db_sess = session.create_session()
+    user = db_sess.query(User).get(current_user.id)
+    user.name = request.args.get('name')
+    user.information = request.args.get('information')
+    user.connection = request.args.get('connection')
+    db_sess.commit()
+    return redirect('/profile')
 
 @app.route('/process_interest', methods=['POST'])
 def process_interest():
