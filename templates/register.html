@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block content %}
@@ -58,21 +59,16 @@
             </p>
         {% endfor %}
     </p>
-    <div class="center">
-        <form method="POST" action="/" enctype="multipart/form-data">
-            <input class="ok" type="file" name="file">
-        </form>
-    </div>
     <p>
-        {{ form.is_allow_gps.label }}<br>
-        {{ form.is_allow_gps(class="form-control") }}<br>
-        {% for error in form.is_allow_gps.errors %}
+        {{ form.image.label }}<br>
+        {{ form.image(class="form-control") }}<br>
+        {% for error in form.image.errors %}
             <p class="alert alert-danger" role="alert">
                 {{ error }}
             </p>
         {% endfor %}
     </p>
-    <p>{{ form.submit(type="submit", class="op") }}</p>
+    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
     {{message}}
 </form>
 {% endblock %}

@@ -1,3 +1,4 @@
+
 import sqlalchemy
 from .session import SqlAlchemyBase
 from sqlalchemy import orm
@@ -23,7 +24,5 @@ class User(SqlAlchemyBase, UserMixin):
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     information = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     connection = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    image = sqlalchemy.Column(sqlalchemy.LargeBinary)
-    is_allow_gps = sqlalchemy.Column(sqlalchemy.Boolean, nullable=True)
+    image = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     interests = orm.relationship("Interest", back_populates='user')
-

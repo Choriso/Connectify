@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, StringField, SubmitField, EmailField, BooleanField
+from flask_wtf.file import FileRequired
+from wtforms import PasswordField, StringField, SubmitField, EmailField, BooleanField, FileField
 from wtforms.validators import DataRequired
 
 
@@ -10,7 +11,7 @@ class RegisterForm(FlaskForm):
     name = StringField('Никнейм', validators=[DataRequired()])
     information = StringField('О себе', validators=[DataRequired()])
     connection = StringField('Информация для контакта', validators=[DataRequired()])
-    is_allow_gps = BooleanField('Разрешаете ли вы доступ к GPS?', validators=[DataRequired()])
+    image = FileField('Фотография профиля', validators=[FileRequired()])
     submit = SubmitField('Завершить')
 
 

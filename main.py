@@ -1,11 +1,17 @@
-from flask import Flask, render_template, redirect, request, make_response, session, abort
+
+import os
+
+from flask import Flask, render_template, redirect, request, make_response, session, abort, url_for
+from werkzeug.utils import secure_filename
+
 from data import session
 from data.user import User
 from data.interest import Interest
 from forms.interest import InterestForm
 from forms.user import RegisterForm, LoginForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from get_similar import similar
+#from get_similar import line_vector, cosdis
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
@@ -67,9 +73,14 @@ def reqister():
             email=form.email.data,
             information=form.information.data,
             connection=form.connection.data,
-            image=form.request.files['file'].read(),
-            is_allow_gps=form.is_allow_gps.data
+            image=form.image.data
         )
+        if form.validate_on_submit():
+            f = form.photo.data
+            filename = secure_filename(user.image)
+
+        f.save(os.path.join(app.instance_path, 'photos', filename))
+        print(user.image)
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
@@ -77,27 +88,35 @@ def reqister():
     return render_template('register.html', title='Регистрация', form=form)
 
 
-@app.route('/search', methods=['GET'])
-def search():
-    query = request.args.get('q')
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
     db_sess = session.create_session()
-    # Получаем значение из параметра 'q' в запросе
-    # Здесь можно выполнить логику обработки запроса, например, выполнить поиск в базе данных или другие действия
-    return f'Вы выполнили поиск по запросу: {query}'
-    if query:
-        all_interests = db_sess.query(Interest)
-        interest_searched = []
-        searched = False
-        for i in all_interests:
-            for w in i.title:
-                if similar(query, w) > 0.6:
-                    searched = True
-            for w in i.description:
-                if similar(query, w) > 0.6:
-                    searched = True
-            if searched:
-                interest_searched.append(i)
-        return render_template("index.html", interests=interest_searched)
+    user = db_sess.query(User).get(current_user.id)
+    interest = db_sess.query(Interest).filter(Interest.user == current_user)
+    return render_template('profile.html', title='Профиль', interest=interest, current_user=current_user)
+
+
+@app.route('/search', methods=['GET'])
+#def search():
+#    SIMILAR_RATIO = 0.5
+#    query = request.args.get('q')
+#    if query == "все":
+#        return redirect("/")
+#    db_sess = session.create_session()
+#    if query:
+#        vector_query = line_vector(query)
+#        all_interests = db_sess.query(Interest)
+#        interest_searched = {}
+#        for i in all_interests:
+#            tittle_cos = cosdis(vector_query, line_vector(i.title))
+#            disc_cos = cosdis(vector_query, line_vector(i.description))
+#            if tittle_cos > SIMILAR_RATIO:
+#                interest_searched[i] = tittle_cos
+#            elif disc_cos > SIMILAR_RATIO:
+#                interest_searched[i] = disc_cos
+#        sorted_interests = [i[0] for i in sorted(interest_searched.items(), key=lambda item: item[1])][::-1]
+#        return render_template("index.html", interest=sorted_interests)
 
 
 # вход в учётную запись
@@ -157,7 +176,6 @@ def edit_news(id):
         if interest:
             form.title.data = interest.title
             form.description.data = interest.description
-            form.tags.data = interest.tags
         else:
             abort(404)
     if form.validate_on_submit():
@@ -166,7 +184,6 @@ def edit_news(id):
         if interest:
             interest.title = form.title.data
             interest.description = form.description.data
-            interest.tags = form.tags.data
             db_sess.commit()
             return redirect('/')
         else:
@@ -189,7 +206,11 @@ def news_delete(id):
         db_sess.commit()
     else:
         abort(404)
-    return redirect('/')
+    previous_page = request.referrer
+    if previous_page:
+        return redirect(previous_page)
+    else:
+        return redirect(url_for('index'))
 
 
 @app.route("/cookie_test")
