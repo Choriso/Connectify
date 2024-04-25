@@ -1,4 +1,8 @@
+import os
+
 from flask import Flask, render_template, redirect, request, make_response, session, abort, url_for
+from werkzeug.utils import secure_filename
+
 from data import session
 from data.user import User
 from data.interest import Interest
@@ -8,6 +12,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from get_similar import line_vector, cosdis
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'static/images'
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -48,6 +53,24 @@ def viewInteres():
     user = db_sess.query(User).get(interest.user_id).first()
     return render_template('view_interes.html', title="", interests=interest, user=user)
 
+@app.route('/upload_render')
+def upload_render():
+    return render_template('upload_file.html')
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'photo' in request.files:
+        db_sess = session.create_session()
+        photo = request.files['photo']
+        print(photo.filename)
+        photo_path = os.path.join(app.config['UPLOAD_FOLDER'], photo.filename)
+        photo.save(photo_path)
+        user = db_sess.get(User, current_user.id)
+        user.image_path = photo_path
+        db_sess.commit()
+        return redirect("/profile")
+    return 'Файл не найден или не загружен'
+
 
 # регистрация пользователя
 @app.route('/register', methods=['GET', 'POST'])
@@ -69,8 +92,11 @@ def reqister():
             information=form.information.data,
             connection=form.connection.data,
             image=form.image.data,
-            is_allow_gps=form.is_allow_gps.data
         )
+        if form.validate_on_submit():
+            f = form.image.data
+            filename = secure_filename(user.image)
+            f.save(os.path.join(app.instance_path, 'photos', filename))
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
@@ -138,6 +164,8 @@ def logout():
 @login_required
 def add_news():
     return render_template('interest.html', title='Добавление интереса')
+
+
 @app.route('/process_profile', methods=['POST'])
 def process_profile():
     db_sess = session.create_session()
@@ -147,6 +175,7 @@ def process_profile():
     user.connection = request.args.get('connection')
     db_sess.commit()
     return redirect('/profile')
+
 
 @app.route('/process_interest', methods=['POST'])
 def process_interest():

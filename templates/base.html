@@ -38,8 +38,9 @@
                 <div class="Profile" style="justify-content: flex-start; align-items: center; gap: 12px; display: flex">
                     <div class="Avatar"
                          style="width: 40px; height: 40px; justify-content: center; align-items: center; display: flex">
-                        <img class="Ellipse1" style="width: 40px; height: 40px; border-radius: 9999px"
-                             src="https://via.placeholder.com/40x40"/>
+                        <img src="{{current_user.image_path}}"
+                             style="width: 40px; height: 40px; border-radius: 100px;"
+                             alt="Avatar">
                     </div>
                     <div class="UserName"
                          style="justify-content: flex-start; align-items: center; gap: 4px; display: flex">
@@ -47,7 +48,7 @@
                             <button class="dropbtn">{{current_user.name}}</button>
                             <div class="dropdown-content">
                                 <a href="/profile">Профиль</a>
-                                <a href="#">Выйти</a>
+                                <a href="/logout">Выйти</a>
                             </div>
                         </div>
                     </div>
@@ -88,6 +89,7 @@
                 window.location.href = selectedValue;
             }
         }
+
 
 </script>
 <main role="main" class="container" style="margin-top: 100px;">
