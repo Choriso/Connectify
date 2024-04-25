@@ -195,7 +195,7 @@ def process_interest():
 # редактирование интереса
 @app.route('/interest/<int:id>', methods=['GET', 'POST'])
 @login_required
-def edit_news(id):
+def edit_interests(id):
     form = InterestForm()
     if request.method == "GET":
         db_sess = session.create_session()
@@ -225,7 +225,7 @@ def edit_news(id):
 
 @app.route('/interest_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
-def news_delete(id):
+def interests_delete(id):
     db_sess = session.create_session()
     interest = db_sess.query(Interest).filter(Interest.id == id,
                                               Interest.user == current_user
