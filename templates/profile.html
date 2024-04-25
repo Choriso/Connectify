@@ -21,7 +21,7 @@
                     Изменить имя:
                 </div>
                 <div contenteditable id="EditBox_Name" class="Text"
-                     style="height: 20px; width: 100px; text-align: center; margin: 5px; color: rgba(0, 0, 0, 0.40); font-size: 12px; word-wrap: break-word">
+                     style="overflow: hidden; height: 20px; width: 100px; text-align: center; margin: 5px; color: rgba(0, 0, 0, 0.40); font-size: 12px; word-wrap: break-word">
                     {{current_user.name}}
                 </div>
             </div>
@@ -85,9 +85,9 @@
 </div>
 
 {% endfor %}
-<div id="edit-container">
-    <button id="save-btn">Сохранить</button>
-    <button id="cancel-btn">Отмена</button>
+<div id="edit-container" class="edit-container">
+    <button id="save-btn" class="btn-save-bg" style="position: static">Сохранить</button>
+    <button id="cancel-btn" class="btn-cansel-bg" style="position: static">Отмена</button>
 </div>
 <div class="figure">
     <img src="{{ url_for('static', filename='images/waves.svg') }}" alt="Ваше изображение"
@@ -105,31 +105,5 @@
     <img src="{{ url_for('static', filename='images/waves_2.svg') }}" alt="Ваше изображение"
          style="right: 62%; top: -20%; position: fixed; height: 700px; width: 700x; z-index: -1;">
 </div>
-<script>
-    const name = document.getElementById('EditBox_Name').textContent;
-    const contacts = document.getElementById('EditBox_Connection').textContent;
-    const decs = document.getElementById('EditBox_Description').textContent;
-    const saveBtn = document.getElementById('save-btn');
-    const cancelBtn = document.getElementById('cancel-btn');
-
-    editableDiv.addEventListener('input', function() {
-        editContainer.style.display = 'block';
-    });
-    async function sendDataToServer() {
-        const url = `/process_profile?information=${encodeURIComponent(decs)}&connection=${encodeURIComponent(contacts)}&name=${encodeURIComponent(name)}`;
-        const response = await fetch(url, {
-            method: 'GET'
-        });
-
-    saveBtn.addEventListener('click', function() {
-        sendDataToServer();
-        editContainer.style.display = 'none';
-    });
-
-    cancelBtn.addEventListener('click', function() {
-        window.location.reload();
-        editContainer.style.display = 'none';
-    });
-
-</script>
+<script src="{{ url_for('static', filename='profile_save.js') }}"></script>
 {% endblock %}
