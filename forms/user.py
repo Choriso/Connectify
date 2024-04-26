@@ -11,7 +11,6 @@ class RegisterForm(FlaskForm):
     name = StringField('Никнейм', validators=[DataRequired()])
     information = StringField('О себе', validators=[DataRequired()])
     connection = StringField('Информация для контакта', validators=[DataRequired()])
-    image = FileField('Фотография профиля')
     submit = SubmitField('Завершить', validators=[FileRequired()])
 
 

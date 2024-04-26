@@ -9,7 +9,7 @@ from data.interest import Interest
 from forms.interest import InterestForm
 from forms.user import RegisterForm, LoginForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from get_similar import line_vector, cosdis
+# from get_similar import line_vector, cosdis
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/images'
@@ -28,7 +28,7 @@ def load_user(user_id):
 # запуск приложения
 def main():
     session.global_init("db/blogs.db")
-    app.run()
+    app.run(port="5000")
 
 
 # главная страница
@@ -76,6 +76,7 @@ def upload_file():
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
     form = RegisterForm()
+    print(1)
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
             return render_template('register.html', title='Регистрация',
@@ -91,12 +92,9 @@ def reqister():
             email=form.email.data,
             information=form.information.data,
             connection=form.connection.data,
-            image=form.image.data,
+            image_path='',
         )
-        if form.validate_on_submit():
-            f = form.image.data
-            filename = secure_filename(user.image)
-            f.save(os.path.join(app.instance_path, 'photos', filename))
+        print(2)
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
@@ -113,26 +111,26 @@ def profile():
     return render_template('profile.html', title='Профиль', interest=interest, current_user=current_user)
 
 
-@app.route('/search', methods=['GET'])
-def search():
-    SIMILAR_RATIO = 0.5
-    query = request.args.get('q')
-    if query == "все":
-        return redirect("/")
-    db_sess = session.create_session()
-    if query:
-        vector_query = line_vector(query)
-        all_interests = db_sess.query(Interest)
-        interest_searched = {}
-        for i in all_interests:
-            tittle_cos = cosdis(vector_query, line_vector(i.title))
-            disc_cos = cosdis(vector_query, line_vector(i.description))
-            if tittle_cos > SIMILAR_RATIO:
-                interest_searched[i] = tittle_cos
-            elif disc_cos > SIMILAR_RATIO:
-                interest_searched[i] = disc_cos
-        sorted_interests = [i[0] for i in sorted(interest_searched.items(), key=lambda item: item[1])][::-1]
-        return render_template("index.html", interest=sorted_interests)
+# @app.route('/search', methods=['GET'])
+# def search():
+#     SIMILAR_RATIO = 0.5
+#     query = request.args.get('q')
+#     if query == "все":
+#         return redirect("/")
+#     db_sess = session.create_session()
+#     if query:
+#         vector_query = line_vector(query)
+#         all_interests = db_sess.query(Interest)
+#         interest_searched = {}
+#         for i in all_interests:
+#             tittle_cos = cosdis(vector_query, line_vector(i.title))
+#             disc_cos = cosdis(vector_query, line_vector(i.description))
+#             if tittle_cos > SIMILAR_RATIO:
+#                 interest_searched[i] = tittle_cos
+#             elif disc_cos > SIMILAR_RATIO:
+#                 interest_searched[i] = disc_cos
+#         sorted_interests = [i[0] for i in sorted(interest_searched.items(), key=lambda item: item[1])][::-1]
+#         return render_template("index.html", interest=sorted_interests)
 
 
 # вход в учётную запись

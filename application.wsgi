@@ -1,4 +1,3 @@
-from application import app as application
-
-if __name__ == "__main__":
-    application.run()
+from waitress import serve
+import app
+serve(app.app, host='0.0.0.0', port=8080)
