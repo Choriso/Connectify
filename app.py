@@ -2,14 +2,13 @@ import os
 
 from flask import Flask, render_template, redirect, request, make_response, session, abort, url_for
 from werkzeug.utils import secure_filename
-
 from data import session
 from data.user import User
 from data.interest import Interest
 from forms.interest import InterestForm
 from forms.user import RegisterForm, LoginForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-# from get_similar import line_vector, cosdis
+from get_similar import line_vector, cosdis
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/images'
@@ -28,7 +27,7 @@ def load_user(user_id):
 # запуск приложения
 def main():
     session.global_init("db/blogs.db")
-    app.run(port="5000")
+    app.run()
 
 
 # главная страница
@@ -37,7 +36,7 @@ def index():
     db_sess = session.create_session()
     interest = db_sess.query(Interest)
     if current_user.is_authenticated:
-        interest = db_sess.query(Interest)
+        interest = db_sess.query(Interest).filter(Interest.user_id != current_user.id)[::-1]
     return render_template("index.html", interest=interest, current_user=current_user)
 
 
@@ -46,16 +45,33 @@ def geolocation():
     return render_template('geolocation_ip.html')
 
 
+@app.route('/viewProfile', methods=['GET'])
+def viewProfile():
+    user_id = request.args.get('user_id')
+
+    db_sess = session.create_session()
+    interest = db_sess.query(Interest).filter(Interest.user_id == user_id)
+    user = db_sess.query(User).get(user_id)
+
+    return render_template('view_profile.html', interest=interest, user=user)
+
+
 @app.route('/viewInteres', methods=['GET'])
 def viewInteres():
+    user_id = request.args.get('user_id')
+    interest_id = request.args.get('interest_id')
+
     db_sess = session.create_session()
-    interest = db_sess.query(Interest).filter(Interest.id == id).first()
-    user = db_sess.query(User).get(interest.user_id).first()
+    interest = db_sess.query(Interest).filter(Interest.id == interest_id).first()
+    user = db_sess.query(User).get(user_id)
+
     return render_template('view_interes.html', title="", interests=interest, user=user)
+
 
 @app.route('/upload_render')
 def upload_render():
     return render_template('upload_file.html')
+
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -76,8 +92,8 @@ def upload_file():
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
     form = RegisterForm()
-    print(1)
     if form.validate_on_submit():
+        print("fgfgfgd")
         if form.password.data != form.password_again.data:
             return render_template('register.html', title='Регистрация',
                                    form=form,
@@ -92,9 +108,7 @@ def reqister():
             email=form.email.data,
             information=form.information.data,
             connection=form.connection.data,
-            image_path='',
         )
-        print(2)
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
@@ -111,26 +125,26 @@ def profile():
     return render_template('profile.html', title='Профиль', interest=interest, current_user=current_user)
 
 
-# @app.route('/search', methods=['GET'])
-# def search():
-#     SIMILAR_RATIO = 0.5
-#     query = request.args.get('q')
-#     if query == "все":
-#         return redirect("/")
-#     db_sess = session.create_session()
-#     if query:
-#         vector_query = line_vector(query)
-#         all_interests = db_sess.query(Interest)
-#         interest_searched = {}
-#         for i in all_interests:
-#             tittle_cos = cosdis(vector_query, line_vector(i.title))
-#             disc_cos = cosdis(vector_query, line_vector(i.description))
-#             if tittle_cos > SIMILAR_RATIO:
-#                 interest_searched[i] = tittle_cos
-#             elif disc_cos > SIMILAR_RATIO:
-#                 interest_searched[i] = disc_cos
-#         sorted_interests = [i[0] for i in sorted(interest_searched.items(), key=lambda item: item[1])][::-1]
-#         return render_template("index.html", interest=sorted_interests)
+@app.route('/search', methods=['GET'])
+def search():
+    SIMILAR_RATIO = 0.5
+    query = request.args.get('q')
+    if query == "все":
+        return redirect("/")
+    db_sess = session.create_session()
+    if query:
+        vector_query = line_vector(query)
+        all_interests = db_sess.query(Interest)
+        interest_searched = {}
+        for i in all_interests:
+            tittle_cos = cosdis(vector_query, line_vector(i.title))
+            disc_cos = cosdis(vector_query, line_vector(i.description))
+            if tittle_cos > SIMILAR_RATIO:
+                interest_searched[i] = tittle_cos
+            elif disc_cos > SIMILAR_RATIO:
+                interest_searched[i] = disc_cos
+        sorted_interests = [i[0] for i in sorted(interest_searched.items(), key=lambda item: item[1])][::-1]
+        return render_template("index.html", interest=sorted_interests)
 
 
 # вход в учётную запись
@@ -193,7 +207,7 @@ def process_interest():
 # редактирование интереса
 @app.route('/interest/<int:id>', methods=['GET', 'POST'])
 @login_required
-def edit_interests(id):
+def edit_news(id):
     form = InterestForm()
     if request.method == "GET":
         db_sess = session.create_session()
@@ -223,7 +237,7 @@ def edit_interests(id):
 
 @app.route('/interest_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
-def interests_delete(id):
+def news_delete(id):
     db_sess = session.create_session()
     interest = db_sess.query(Interest).filter(Interest.id == id,
                                               Interest.user == current_user
@@ -238,6 +252,30 @@ def interests_delete(id):
         return redirect(previous_page)
     else:
         return redirect(url_for('index'))
+
+
+@app.route("/cookie_test")
+def cookie_test():
+    visits_count = int(request.cookies.get("visits_count", 0))
+    if visits_count:
+        res = make_response(
+            f"Вы пришли на эту страницу {visits_count + 1} раз")
+        res.set_cookie("visits_count", str(visits_count + 1),
+                       max_age=60 * 60 * 24 * 365 * 2)
+    else:
+        res = make_response(
+            "Вы пришли на эту страницу в первый раз за последние 2 года")
+        res.set_cookie("visits_count", '1',
+                       max_age=60 * 60 * 24 * 365 * 2)
+    return res
+
+
+@app.route("/session_test")
+def session_test():
+    visits_count = session.get('visits_count', 0)
+    session['visits_count'] = visits_count + 1
+    return make_response(
+        f"Вы пришли на эту страницу {visits_count + 1} раз")
 
 
 if __name__ == '__main__':

@@ -21,9 +21,11 @@
             <div class="MenuAndSearch"
                  style="justify-content: flex-start; align-items: center; gap: 24px; display: flex">
                 <div class="Logo" style="justify-content: flex-start; align-items: center; gap: 7px; display: flex">
-                    <div class="Compass" style="width: 32px; height: 32px; position: relative">
-                        <div class="Rectangle2365"
-                             style="width: 32px; height: 32px; left: 0px; top: 0px; position: absolute; background: #17181C; border-radius: 6px"></div>
+                    <div class="Avatar"
+                         style="width: 40px; height: 40px; justify-content: center; align-items: center; display: inline-flex">
+                        <img src="{{ url_for('static', filename='/images/logo.png') }}"
+                             style="width: 40px; height: 40px; border-radius: 100px;"
+                             alt="Logo">
                     </div>
                     <div class="Text"
                          style="color: #17181C; font-size: 16px; font-weight: bold;">
@@ -89,6 +91,7 @@
                 window.location.href = selectedValue;
             }
         }
+
 
 
 </script>

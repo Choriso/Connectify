@@ -8,10 +8,10 @@
 </a>
 <div class="background"
      style="margin-left: -106px; margin-block-end: 11px; padding: 10px; width: min-content; height: min-content; position: relative; justify-content: space-between; align-items: center; display: inline-flex;">
-    <a href="/upload_render">
+    <a>
         <div class="Avatar"
              style="width: 229px; height: 229px; justify-content: center; align-items: center; display: inline-flex">
-            <img src="{{current_user.image_path}}" style="width: 200px; height: 200px; border-radius: 100px;"
+            <img src="{{user.image_path}}" style="width: 200px; height: 200px; border-radius: 100px;"
                  alt="Avatar">
         </div>
     </a>
@@ -22,9 +22,9 @@
                      style="overflow: hidden; margin-left: 11px; width: 95px; color: black; font-size: 12px; line-height: 24px; word-wrap: break-word">
                     Изменить имя:
                 </div>
-                <div contenteditable id="EditBox_Name" class="Text"
+                <div id="EditBox_Name" class="Text"
                      style="overflow: hidden; height: 20px; width: 100px; text-align: center; margin: 5px; color: rgba(0, 0, 0, 0.40); font-size: 12px; word-wrap: break-word">
-                    {{current_user.name}}
+                    {{user.name}}
                 </div>
             </div>
         </div>
@@ -34,18 +34,18 @@
                      style="width: auto; text-align: center; color: black; font-size: 12px; line-height: 24px; word-wrap: break-word">
                     Контакты
                 </div>
-                <div contenteditable id="EditBox_Connection" class="Text"
+                <div id="EditBox_Connection" class="Text"
                      style="overflow: auto; height: 114px; color: rgba(0, 0, 0, 0.40); font-size: 12px; word-wrap: break-word">
-                    {{current_user.connection}}
+                    {{user.connection}}
                 </div>
             </div>
         </div>
     </div>
     <div style="width: 314px; height: 204px; position: relative; margin-left: 10px; padding: 10px">
         <div style="width: 314px; height: 204px; left: 0px; top: 0px; position: absolute; background: #F1F1F1; border-radius: 14px"></div>
-        <div contenteditable id="EditBox_Description" class="Text"
+        <div id="EditBox_Description" class="Text"
              style="width: -webkit-fill-available; overflow: auto; padding-right: 10px; height: -webkit-fill-available; top: 38px; position: absolute; color: rgba(0, 0, 0, 0.40); font-size: 12px; word-wrap: break-word">
-            {{current_user.information}}
+            {{user.information}}
         </div>
         <div class="Text"
              style="text-align: center; color: black; position: relative; font-size: 12px; line-height: 24px; word-wrap: break-word">
@@ -60,7 +60,7 @@
          style="overflow: hidden; position: relative; border-radius: 16px; width: 400px; height: 225px;">
     </div>
 </div>
-<div class="Text" style="position: relative; font-size: 31px; font-weight: bold; left: 35%;">Мои Интересы</div>
+<div class="Text" style="position: relative; font-size: 31px; font-weight: bold; left: 35%;">Интересы</div>
 {% for item in interest %}
 <div style="overflow: visible; margin-top: 10px; position: relative; background: #d1d7dda3; border-radius: 16px; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex; padding: 16px">
     <div class="interes-main-info"
@@ -76,21 +76,10 @@
                     {{item.description}}
                 </div>
             </div>
-            <a href="/interest_delete/{{ item.id }}" style="color: black">
-                <div class="btn" style="padding: 9px 12px;">
-                    <div class="Text">
-                        <u>Удалить</u>
-                    </div>
-                </div>
-                <a/>
     </div>
 </div>
 
 {% endfor %}
-<div id="edit-container" class="edit-container">
-    <button id="save-btn" class="btn-save-bg" style="position: static">Сохранить</button>
-    <button id="cancel-btn" class="btn-cansel-bg" style="position: static">Отмена</button>
-</div>
 <div class="figure">
     <img src="{{ url_for('static', filename='images/waves.svg') }}" alt="Ваше изображение"
          style="z-index: -1; transform: rotate(180deg); right: 82%; top: 0%; position: fixed; height: 1041px; width: 1039px;">
@@ -107,5 +96,4 @@
     <img src="{{ url_for('static', filename='images/waves_2.svg') }}" alt="Ваше изображение"
          style="right: 62%; top: -20%; position: fixed; height: 700px; width: 700x; z-index: -1;">
 </div>
-<script src="{{ url_for('static', filename='profile_save.js') }}"></script>
 {% endblock %}
