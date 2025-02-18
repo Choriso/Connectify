@@ -1,65 +1,20 @@
-{% extends "base.html" %}
-
-{% block content %}
-<div class="text" style="font-weight: bold;">Интересы</div>
-<h1></h1>
-{% if current_user.is_authenticated %}
-<a href="interest" class="btn-createInterest">
-    <div class="Text" style="width: 188px; text-align: center; color: black; font-size: 14px;">
-        Новый интерес
-    </div>
-</a>
-<form action="/search" method="get" class="search-form">
-    <div class="input-group" style="width: 90%;">
-        <input type="text" class="form-control search-input" style="border-radius: 30px;" name="q" placeholder="Поиск по сайту" aria-label="Поиск">
-        <button class="btn" style="margin-top: -3px; margin-left: 3px; transform: scale(0.9);" type="submit">Найти</button>
-    </div>
-</form>
-{% endif %}
-{% for item in interest %}
-<div style="overflow: visible; margin-top: 10px; position: relative; background: #d1d7dda3; border-radius: 16px; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex; padding: 16px">
-    <div class="interes-main-info"
-         style="overflow: visible; width: 959px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 12px; display: inline-flex">
-        <a href="/viewProfile?user_id={{ item.user.id }}" style="color: black">
-            <div class="Text" style="font-weight: bold;">
-                {{item.user.name}} - {{item.title}}
-            </div>
-            <a/>
-            <div class="Preview"
-                 style="margin-block-end: 16px; overflow: visible; width: 959px; padding: 16px; background: #fbfbfbc2; border-radius: 12px; border: 1px #E4E5E9 solid">
-                <div class="Text" style="max-width: 924px; word-wrap: break-word;">
-                    {{item.description}}
-                </div>
-            </div>
-            <a href="/viewInteres?user_id={{ item.user.id }}&interest_id={{ item.id }}" style="color: black">
-                <div class="btn" style="padding: 9px 12px;">
-                    <div class="Text">
-                        <u>Посмотреть</u>
-                    </div>
-                </div>
-                <a/>
-    </div>
-
-    {% if current_user.is_authenticated and current_user == item.user %}
-
-    {% endif %}
-</div>
-
-{% endfor %}
-<div class="figure">
-    <img src="{{ url_for('static', filename='images/waves.svg') }}" alt="Ваше изображение"
-         style="z-index: -1; transform: rotate(180deg); right: 82%; top: 0%; position: fixed; height: 1041px; width: 1039px;">
-</div>
-<div class="figure">
-    <img src="{{ url_for('static', filename='images/waves.svg') }}" alt="Ваше изображение"
-         style="right: -22%; top: 15%; position: fixed; height: 1041px; width: 1039px; z-index: -1;">
-</div>
-<div class="figure">
-    <img src="{{ url_for('static', filename='images/waves_2.svg') }}" alt="Ваше изображение"
-         style="right: 2%; top: 25%; position: fixed; height: 1041px; width: 1039px; z-index: -1;">
-</div>
-<div class="figure">
-    <img src="{{ url_for('static', filename='images/waves_2.svg') }}" alt="Ваше изображение"
-         style="right: 62%; top: -20%; position: fixed; height: 700px; width: 700x; z-index: -1;">
-</div>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Чат</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.5/viewer.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.5/viewer.min.js"></script>
+</head>
+<body>
+    <h2>Flask Чат</h2>
+    <div id="chat"></div>
+    <input type="text" id="messageInput" placeholder="Введите сообщение...">
+    <button onclick="sendMessage()">Отправить</button>
+    <input type="file" id="fileInput" style="display: none;" onchange="uploadFile()">
+    <button onclick="document.getElementById('fileInput').click()">📎</button>
+</body>
+</html>
