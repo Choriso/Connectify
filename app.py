@@ -1,20 +1,32 @@
 import os
 
-from flask import Flask, render_template, redirect, request, make_response, session, abort, url_for
-from werkzeug.utils import secure_filename
-from data import session
+from flask import redirect, make_response, session, abort, url_for, Flask, render_template, request, \
+    send_from_directory, jsonify
 from data.user import User
 from data.interest import Interest
+from data.message import Message
 from forms.interest import InterestForm
 from forms.user import RegisterForm, LoginForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from get_similar import line_vector, cosdis
+from flask_socketio import SocketIO, emit
+import sqlalchemy as sa
+from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+import sqlite3
+from PIL import Image, ImageFile
+from FindLinks import contains_contact_info
+from data import session
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'static/images'
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///chat.db"
+app.config['UPLOAD_FOLDER'] = 'static/uploads/'
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+socketio = SocketIO(app, cors_allowed_origins="*")
+CORS(app)  # Разрешаем CORS для фронта
 
 
 # загрузка пользователя
@@ -27,7 +39,7 @@ def load_user(user_id):
 # запуск приложения
 def main():
     session.global_init("db/blogs.db")
-    app.run()
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
 
 
 # главная страница
@@ -73,8 +85,8 @@ def upload_render():
     return render_template('upload_file.html')
 
 
-@app.route('/upload', methods=['POST'])
-def upload_file():
+@app.route('/upload_avatar', methods=['POST'])
+def upload_avatar():
     if 'photo' in request.files:
         db_sess = session.create_session()
         photo = request.files['photo']
@@ -144,7 +156,7 @@ def search():
             elif disc_cos > SIMILAR_RATIO:
                 interest_searched[i] = disc_cos
         sorted_interests = [i[0] for i in sorted(interest_searched.items(), key=lambda item: item[1])][::-1]
-        return render_template("index.html", interest=sorted_interests)
+        return render_template("chat.html", interest=sorted_interests)
 
 
 # вход в учётную запись
@@ -278,5 +290,165 @@ def session_test():
         f"Вы пришли на эту страницу {visits_count + 1} раз")
 
 
-if __name__ == '__main__':
+@app.route("/chat")
+def chat():
+    return render_template("chat.html")
+
+
+@socketio.on("send_message")
+def handle_message(data):
+    """Обработка входящего сообщения и его сохранение в БД"""
+    text = data.get("text", "")
+    file_path = data.get("file_path", None)
+
+    db_sess = session.create_session()
+    message = Message(text=text, file_path=file_path)
+
+    db_sess.add(message)
+    db_sess.commit()
+
+    emit("addMessageToChat", {
+        "author": "0000",
+        "id": message.id,
+        "text": text
+    }, broadcast=True)
+
+    db_sess.close()
+
+
+# Отправка сообщения
+@app.route("/messages", methods=["POST"])
+def send_message():
+    """Отправка нового сообщения в БД"""
+    data = request.json
+    author = data.get("author", "Аноним")
+    content = data.get("content", "")
+    file_url = data.get("file_url", None)
+    message_type = data.get("type", "text")
+
+    db_sess = session.create_session()
+
+    # Создаём объект сообщения
+    new_message = Message(
+        author=author,
+        content=content,
+        file_url=file_url,
+        message_type=message_type
+    )
+
+    # Добавляем в сессию и сохраняем в БД
+    db_sess.add(new_message)
+    db_sess.commit()
+
+    return jsonify({"status": "ok", "message": {
+        "id": new_message.id,
+        "author": new_message.author,
+        "content": new_message.content,
+        "file_url": new_message.file_url,
+        "message_type": new_message.message_type
+    }})
+
+
+@app.route("/messages", methods=["GET"])
+def get_messages():
+    """Получение всех сообщений из БД"""
+    db_sess = session.create_session()
+
+    # Получаем все сообщения, сортируя по timestamp (от новых к старым)
+    messages = db_sess.execute(
+        sa.select(Message).order_by(Message.timestamp.desc())
+    ).scalars().all()
+
+    return jsonify([{
+        "id": msg.id,
+        "content": msg.content,
+        "message_type": msg.message_type,
+        "timestamp": msg.timestamp.isoformat() if msg.timestamp else None
+    } for msg in messages])
+
+
+# Изменение сообщения
+@app.route("/messages/<int:message_id>", methods=["PUT"])
+def edit_message(message_id):
+    """Обновление содержимого сообщения в БД"""
+    data = request.json
+    new_content = data.get("content")
+
+    if not new_content:
+        return jsonify({"status": "error", "message": "Content cannot be empty"}), 400
+
+    # Открываем сессию
+    db_sess = session.create_session()
+
+    # Проверяем, существует ли сообщение
+    message = db_sess.execute(
+        sa.select(Message).where(Message.id == message_id)
+    ).scalar()
+
+    if not message:
+        return jsonify({"status": "error", "message": "Message not found"}), 404
+
+    # Обновляем содержимое сообщения
+    message.content = new_content
+    db_sess.commit()
+
+    return jsonify({"status": "ok", "message": {"id": message_id, "content": new_content}})
+
+
+# Удаление сообщения
+@app.route("/messages/<int:message_id>", methods=["DELETE"])
+def delete_message(message_id):
+    # Открываем сессию
+    db_sess = session.create_session()
+
+    # Ищем сообщение в БД
+    message = db_sess.execute(
+        sa.select(Message).where(Message.id == message_id)
+    ).scalar()
+    if not message:
+        return jsonify({"status": "error", "message": "Message not found"}), 404
+
+    # Если это файл или изображение — удаляем его из папки загрузок
+    if message.message_type in ["file", "image"]:
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], os.path.basename(message.content))
+        if os.path.exists(file_path):
+            os.remove(file_path)  # Удаляем файл
+
+    # Удаляем сообщение из БД
+    db_sess.delete(message)
+    db_sess.commit()
+
+    return jsonify({"status": "ok"})
+
+
+@app.route("/upload", methods=["POST"])
+def upload_file():
+    if "file" not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+
+    filename = file.filename
+    file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    if filename.lower().endswith(("png", "jpg", "jpeg", "webp")):
+        ImageFile.LOAD_TRUNCATED_IMAGES = True  # Разрешаем загружать "битые" файлы
+        img = Image.open(file.stream)
+        img = img.convert("RGB")  # Конвертируем в RGB (если PNG, уберем альфа-канал)
+        img.save(file_path, "JPEG", quality=70, icc_profile=None)  # Сохраняем с качеством 70% (можно менять)
+    else:
+        file.save(file_path)  # Просто сохраняем файл, если это не картинка
+
+    # Отдаем URL файла для отображения
+    file_url = f"http://127.0.0.1:5000/static/uploads/{filename}"
+    return jsonify({"status": "ok", "file_url": file_url})
+
+
+@app.route("/uploads/<filename>")
+def get_uploaded_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+
+
+if __name__ == "__main__":
     main()

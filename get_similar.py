@@ -3,8 +3,8 @@ import re
 import gensim.downloader as api
 import pymorphy3
 import numpy as np
-from spellchecker import SpellChecker
 from functools import lru_cache
+from spellchecker import SpellChecker
 
 spell = SpellChecker(language='ru')
 morph = pymorphy3.MorphAnalyzer()
