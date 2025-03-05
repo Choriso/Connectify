@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="overflow: visible; left: 32%; top: 29%; position: absolute; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex; padding: 16px">
+    <div class="figure">
+        <img src="{{ url_for('static', filename='images/waves_3.svg') }}" alt="Ваше изображение"
+             style="z-index: -1; right: 23%; top: -5%; position: fixed; height: 1000px; width: 1000px;">
+        <a style="color: black">
+            <div class="Text" style="width: 666px; font-weight: bold; text-align: center">
+                {{reports.title}}
+            </div>
+            <a/>
+            <div class="Preview"
+                 style="margin-block-end: 16px; overflow: visible; width: 666px; padding: 16px; background: #fbfbfbc2; border-radius: 12px; border: 1px #E4E5E9 solid">
+                <div class="Text" style="max-width: 924px; word-wrap: break-word;">
+                    {{reports.description}}
+                </div>
+            </div>
+            <div class="Text" style="text-align: center">
+                Интерес: {{interest.title}}
+            </div>
+            <div class="Preview"
+                 style="margin-block-end: 16px; overflow: visible; width: 666px; padding: 16px; background: #fbfbfbc2; border-radius: 12px; border: 1px #E4E5E9 solid">
+                <div class="Text" style="max-width: 924px; word-wrap: break-word;">
+                    {{interest.description}}
+                </div>
+            </div>
+            <a onclick="cancel()" style="color: black">
+                <div class="btn-cansel-bg" style="padding: 9px 12px;">
+                    <div class="Text" style="text-align: center;">
+                        <u>Назад</u>
+                    </div>
+                </div>
+                <a/>
+    </div>
+    <div class="figure">
+        <img src="{{ url_for('static', filename='images/waves.svg') }}" alt="Ваше изображение"
+             style="z-index: -1; transform: rotate(180deg); right: 82%; top: 0%; position: fixed; height: 1041px; width: 1039px;">
+    </div>
+    <div class="figure">
+        <img src="{{ url_for('static', filename='images/waves.svg') }}" alt="Ваше изображение"
+             style="right: -22%; top: 15%; position: fixed; height: 1041px; width: 1039px; z-index: -1;">
+    </div>
+    <div class="figure">
+        <img src="{{ url_for('static', filename='images/waves_2.svg') }}" alt="Ваше изображение"
+             style="right: 2%; top: 25%; position: fixed; height: 1041px; width: 1039px; z-index: -1;">
+    </div>
+    <div class="figure">
+        <img src="{{ url_for('static', filename='images/waves_2.svg') }}" alt="Ваше изображение"
+             style="right: 62%; top: -20%; position: fixed; height: 700px; width: 700x; z-index: -1;">
+    </div>
+
+</div>
+<script>
+    function cancel() {
+        window.history.back();
+    }
+
+
+
+</script>
+{% endblock %}
