@@ -14,11 +14,12 @@ class Report(SqlAlchemyBase):
     user_id = sqlalchemy.Column(sqlalchemy.Integer,
                                 sqlalchemy.ForeignKey("users.id"))
     interest_id = sqlalchemy.Column(sqlalchemy.Integer,
-                sqlalchemy.ForeignKey("interests.id"))
-
+                sqlalchemy.ForeignKey("interests.id"), nullable=True)
+    #event_id = sqlalchemy.Column(sqlalchemy.Integer,
+    #            sqlalchemy.ForeignKey("events.id"), nullable=True)
     # одобрено или отказано
     #success = sqlalchemy.Column(sqlalchemy.Integer,default=0, nullable=True)
-
+    #event = orm.relationship("Event")
     interest = orm.relationship("Interest")
     user = orm.relationship('User')
 

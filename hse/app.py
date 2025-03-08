@@ -345,47 +345,53 @@ def interests_delete(id):
 
 '''
 
+
 # страница событий
 @app.route("/index_event")
 def index_event():
     db_sess = session.create_session()
-    event = db_sess.query(Event)
-    return render_template("index_event.html", event=event, current_user=current_user)
+    events = db_sess.query(Event)
+    return render_template("index_event.html", events=events, current_user=current_user)
 
-# @app.route('/viewEvents', methods=['GET'])
-# def viewEvents():
-#     user_id = request.args.get('user_id')
-#     event_id = request.args.get('event_id')
-#
-#     db_sess = session.create_session()
-#     event = db_sess.query(Interest).filter(Interest.id == event_id).first()
-#     user = db_sess.query(User).get(user_id)
-#
-#     return render_template('view_event.html', title="", events=event, user=user)
-#
-#
-# # добавление cобытия
-# @app.route('/event', methods=['GET', 'POST'])
-# @login_required
-# def add_events():
-#     return render_template('event.html', title='Добавление события')
-#
-#
-# @app.route('/process_event', methods=['POST'])
-# def process_event():
-#     title = request.form['title']
-#     description = request.form['description']
-#     print(title, description)
-#     db_sess = session.create_session()
-#     interest = Interest()
-#     interest.title = title
-#     interest.description = description
-#     current_user.interests.append(interest)
-#     db_sess.merge(current_user)
-#     db_sess.commit()
-#     return redirect('/')
-#
-#
+
+@app.route('/viewEvent', methods=['GET'])
+def viewEvent():
+    user_id = request.args.get('user_id')
+    event_id = request.args.get('event_id')
+    db_sess = session.create_session()
+    events = db_sess.query(Interest).filter(Interest.id == event_id).first()
+    user = db_sess.query(User).get(user_id)
+    return render_template('view_event.html', title="", events=events, user=user)
+
+
+# добавление cобытия
+@app.route('/event', methods=['GET', 'POST'])
+@login_required
+def add_events():
+    return render_template('event.html', title='Добавление события')
+
+
+@app.route('/process_event', methods=['POST'])
+def process_event():
+    title = request.form['title']
+    description = request.form['description']
+    date_begin = request.form['date_begin']
+    date_end = request.form['date_end']
+    place = request.form['place']
+    print(title, description, date_begin, date_end, place)
+    db_sess = session.create_session()
+    event = Event()
+    event.title = title
+    event.description = description
+    event.date_begin = date_begin
+    event.date_end = date_end
+    event.place = place
+    current_user.events.append(event)
+    db_sess.merge(current_user)
+    db_sess.commit()
+    return redirect('/index_event')
+
+
 # # редактирование интереса
 # @app.route('/interest/<int:id>', methods=['GET', 'POST'])
 # @login_required
@@ -415,8 +421,8 @@ def index_event():
 #                            title='Редактирование интереса',
 #                            form=form
 #                            )
-#
-#
+
+
 @app.route('/event_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
 def events_delete(id):
@@ -433,7 +439,7 @@ def events_delete(id):
     if previous_page:
         return redirect(previous_page)
     else:
-        return redirect(url_for('index'))
+        return redirect(url_for('index_event'))
 
 
 """
@@ -453,7 +459,7 @@ def viewReportInteres():
     db_sess = session.create_session()
     interest = db_sess.query(Interest).filter(Interest.id == interest_id).first()
     print(1)
-    return render_template('view_reportinterest.html', title="", interests=interest)
+    return render_template('view_report_interest.html', title="", interests=interest)
 
 
 

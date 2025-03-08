@@ -32,5 +32,6 @@ class User(SqlAlchemyBase, UserMixin):
     connection = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     image_path = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     interests = orm.relationship("Interest", back_populates='user')
+    events = orm.relationship("Event", back_populates='user')
     # reports = orm.relationship("Report", back_populates='user')
 
