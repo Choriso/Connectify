@@ -11,6 +11,13 @@ class Message {
                 let messageElement = document.createElement("div");
                 messageElement.classList.add("message");
 
+                // Добавляем класс в зависимости от автора
+                if (this.author === "Вы") {
+                    messageElement.classList.add("sent");
+                } else {
+                    messageElement.classList.add("received");
+                }
+
                 let timeElement = document.createElement("span");
                 timeElement.classList.add("timestamp");
                 timeElement.innerText = this.timestamp;

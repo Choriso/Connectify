@@ -17,12 +17,14 @@ import sqlite3
 from PIL import Image, ImageFile
 from FindLinks import contains_contact_info
 from data import session
+import re
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///chat.db"
 app.config['UPLOAD_FOLDER'] = 'static/uploads/'
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
+login_manager.login_view = ''
 login_manager.init_app(app)
 
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -42,13 +44,15 @@ def main():
     socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
 
 
-# главная страница
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
+def start():
+    return render_template("startScreen.html", current_user=current_user)
+
+
+@app.route("/intereses")
 def index():
     db_sess = session.create_session()
-    interest = db_sess.query(Interest)
-    if current_user.is_authenticated:
-        interest = db_sess.query(Interest).filter(Interest.user_id != current_user.id)[::-1]
+    interest = db_sess.query(Interest).filter(Interest.user_id != current_user.id)[::-1]
     return render_template("index.html", interest=interest, current_user=current_user)
 
 
@@ -101,31 +105,43 @@ def upload_avatar():
 
 
 # регистрация пользователя
-@app.route('/register', methods=['GET', 'POST'])
-def reqister():
-    form = RegisterForm()
-    if form.validate_on_submit():
-        print("fgfgfgd")
-        if form.password.data != form.password_again.data:
-            return render_template('register.html', title='Регистрация',
-                                   form=form,
-                                   message="Пароли не совпадают")
-        db_sess = session.create_session()
-        if db_sess.query(User).filter(User.email == form.email.data).first():
-            return render_template('register.html', title='Регистрация',
-                                   form=form,
-                                   message="Такой пользователь уже есть")
-        user = User(
-            name=form.name.data,
-            email=form.email.data,
-            information=form.information.data,
-            connection=form.connection.data,
-        )
-        user.set_password(form.password.data)
-        db_sess.add(user)
-        db_sess.commit()
-        return redirect('/login')
-    return render_template('register.html', title='Регистрация', form=form)
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.json
+    print("Получен POST-запрос на /register")
+    print("Request data:", request.json)
+    email = data.get('email')
+    password = data.get('password')
+    full_name = data.get('fullName')
+    accept_policy = data.get('acceptPolicy', 0)
+    allow_location = data.get('allowLocation', 0)
+
+    db_sess = session.create_session()
+
+    # Проверка на существующего пользователя
+    if db_sess.query(User).filter(User.email == email).first():
+        return jsonify({"success": False, "message": "Такой пользователь уже зарегистрирован."})
+
+    if not accept_policy:
+        return jsonify({"success": False, "message": "Вы должны принять политику конфиденциальности."})
+
+    email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    if not re.match(email_regex, email):
+        return jsonify({"success": False, "message": "Некорректный формат email."})
+
+    # Создание нового пользователя
+    user = User(
+        name=full_name,
+        email=email,
+        allow_location=bool(allow_location),
+    )
+    user.set_password(password)  # Хеширование пароля
+
+    db_sess.add(user)
+    db_sess.commit()
+
+    login_user(user)
+    return jsonify({"success": True})
 
 
 @app.route('/profile', methods=['GET', 'POST'])
@@ -142,7 +158,7 @@ def search():
     SIMILAR_RATIO = 0.5
     query = request.args.get('q')
     if query == "все":
-        return redirect("/")
+        return redirect("/intereses")
     db_sess = session.create_session()
     if query:
         vector_query = line_vector(query)
@@ -160,19 +176,20 @@ def search():
 
 
 # вход в учётную запись
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['POST'])
 def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        db_sess = session.create_session()
-        user = db_sess.query(User).filter(User.email == form.email.data).first()
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember_me.data)
-            return redirect("/")
-        return render_template('login.html',
-                               message="Неправильный логин или пароль",
-                               form=form)
-    return render_template('login.html', title='Авторизация', form=form)
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+
+    db_sess = session.create_session()
+    user = db_sess.query(User).filter(User.email == email).first()
+
+    if not user or not user.check_password(password):
+        return jsonify({"success": False, "message": "Неверный email или пароль."})
+
+    login_user(user)
+    return jsonify({"success": True, "message": "Вход выполнен успешно."})
 
 
 # выход с учётной записи
@@ -213,7 +230,7 @@ def process_interest():
     current_user.interests.append(interest)
     db_sess.merge(current_user)
     db_sess.commit()
-    return redirect('/')
+    return redirect('/intereses')
 
 
 # редактирование интереса
@@ -238,7 +255,7 @@ def edit_news(id):
             interest.description = form.description.data
             interest.tags = form.tags.data
             db_sess.commit()
-            return redirect('/')
+            return redirect('/intereses')
         else:
             abort(404)
     return render_template('interest.html',
@@ -302,7 +319,11 @@ def handle_message(data):
     file_path = data.get("file_path", None)
 
     db_sess = session.create_session()
-    message = Message(text=text, file_path=file_path)
+    message = Message(
+        text=text,
+        file_path=file_path,
+        author_id=current_user.id  # Сохраняем ID пользователя
+    )
 
     db_sess.add(message)
     db_sess.commit()
@@ -356,7 +377,7 @@ def get_messages():
 
     # Получаем все сообщения, сортируя по timestamp (от новых к старым)
     messages = db_sess.execute(
-        sa.select(Message).order_by(Message.timestamp.desc())
+        sa.select(Message).order_by(Message.timestamp.asc())
     ).scalars().all()
 
     return jsonify([{
@@ -407,7 +428,8 @@ def delete_message(message_id):
     ).scalar()
     if not message:
         return jsonify({"status": "error", "message": "Message not found"}), 404
-
+    if message.author != current_user.id:
+        return jsonify({"status": "error", "message": "Вы можете удалять только свои сообщения"}), 403
     # Если это файл или изображение — удаляем его из папки загрузок
     if message.message_type in ["file", "image"]:
         file_path = os.path.join(app.config["UPLOAD_FOLDER"], os.path.basename(message.content))

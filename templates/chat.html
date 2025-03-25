@@ -7,14 +7,134 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.5/viewer.min.css" />
+    <link href="/static/CSS/interestStyle.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.5/viewer.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e2e;
+            color: #ffffff;
+            margin: 2px;
+            height: 91vh;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+        .chat-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            border: 1px solid #444;
+        }
+        .chat-list {
+            width: 25%;
+            background-color: #2a2a3a;
+            padding: 10px;
+            border-right: 1px solid #444;
+        }
+        .chat-list h3 {
+            text-align: center;
+        }
+        .chat-item {
+            padding: 10px;
+            border-bottom: 1px solid #444;
+            cursor: pointer;
+        }
+        .chat-item.selected {
+            background-color: #3a3a5a;
+        }
+        .chat-box {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #1e1e2e;
+        }
+        .chat-header {
+            padding: 15px;
+            background-color: #2a2a3a;
+            text-align: center;
+            border-bottom: 1px solid #444;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+            max-width: 60%;
+        }
+        .message.received {
+            background-color: #3a3a5a;
+            align-self: flex-start;
+        }
+        .message.sent {
+            background-color: #4a90e2;
+            align-self: flex-end;
+        }
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background-color: #2a2a3a;
+            border-top: 1px solid #444;
+        }
+        .chat-input input {
+            flex-grow: 1;
+            padding: 8px;
+            margin-right: 5px;
+            border: none;
+            border-radius: 5px;
+        }
+        .chat-input button {
+            background-color: #4a90e2;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
 </head>
+
 <body>
-    <h2>Flask Чат</h2>
-    <div id="chat"></div>
-    <input type="text" id="messageInput" placeholder="Введите сообщение...">
-    <button onclick="sendMessage()">Отправить</button>
-    <input type="file" id="fileInput" style="display: none;" onchange="uploadFile()">
-    <button onclick="document.getElementById('fileInput').click()">📎</button>
+    <div class="container">
+        <a class="left-item" href="/intereses" style="color: white">Connectify</a>
+        <div class="center-items">
+            <a class="btn" href="/chat">Чат</a>
+            <a class="btn" href="/profile">Профиль</a>
+            <a class="btn" href="/interest">Создать интерес</a>
+
+        </div>
+    </div>
+    <div class="chat-container">
+        <!-- Список чатов -->
+        <div class="chat-list">
+            <h3>Диалоги</h3>
+            <ul>
+                <li class="chat-item selected">Контакт 1</li>
+                <li class="chat-item">Контакт 2</li>
+                <li class="chat-item">Контакт 3</li>
+            </ul>
+        </div>
+        
+        <!-- Окно чата -->
+        <div class="chat-box">
+            <div class="chat-header">Контакт 1</div>
+            <div class="chat-messages" id="chat">
+                <div class="message received">Привет!</div>
+                <div class="message sent">Привет, как дела?</div>
+                <div class="message received">Все отлично, спасибо!</div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="Введите сообщение...">
+                <button onclick="sendMessage()">Отправить</button>
+                <input type="file" id="fileInput" style="display: none;" onchange="uploadFile()">
+                <button onclick="document.getElementById('fileInput').click()">📎</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
