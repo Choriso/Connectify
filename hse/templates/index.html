@@ -1,12 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="text" style="font-weight: bold;">Интересы</div>
+<div class="text" style="font-weight: bold;">
+    Интересы
+</div>
 <h1></h1>
 {% if current_user.is_authenticated %}
+
 <a href="interest" class="btn-createInterest">
     <div class="Text" style="width: 188px; text-align: center; color: black; font-size: 14px;">
         Новый интерес
+    </div>
+</a>
+<a href="index_event" class="btn">
+    <div class="Text" style="width: 188px; text-align: center; color: black; font-size: 14px;">
+        События
     </div>
 </a>
 <form action="/search" method="get" class="search-form">
@@ -38,10 +46,10 @@
                  </div>
             </div>
         </a>
-        <a href="/report?interest_id={{ item.id }}" style="color: black">
+        <a href="/report?interest_id={{ item.id }}" style="color: black; position: relative; top: -64px; left: 800px" >
             <div class="btn" style="padding: 9px 12px;">
                  <div class="Text">
-                     <u>ЖАЛОБА</u>
+                     <u>Пожаловаться</u>
                  </div>
             </div>
         </a>

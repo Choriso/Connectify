@@ -4,9 +4,14 @@
 <div class="text" style="font-weight: bold;">События</div>
 <h1></h1>
 {% if current_user.is_authenticated %}
-<a href="event" class="btn-createEvent">
+<a href="event" class="btn-createInterest">
     <div class="Text" style="width: 188px; text-align: center; color: black; font-size: 14px;">
         Новое событие
+    </div>
+</a>
+<a href="/" class="btn">
+    <div class="Text" style="width: 188px; text-align: center; color: black; font-size: 14px;">
+        Интересы
     </div>
 </a>
 <form action="/search" method="get" class="search-form">
@@ -38,6 +43,7 @@
                 <div class="Text" style="max-width: 924px; word-wrap: break-word;">
                     {{item.place}}
                 </div>
+            <img src="{{item.image_path}}" style="width: 200px; height: 200px; border-radius: 100px;" alt="Image">
             </div>
         </a>
         <a href="/viewEvent?user_id={{ item.user.id }}&event_id={{ item.id }}" style="color: black">
@@ -47,10 +53,10 @@
                  </div>
             </div>
         </a>
-        <a href="/report?event_id={{ item.id }}" style="color: black">
+        <a href="/report_event?event_id={{ item.id }}" style="color: black; position: relative; top: -64px; left: 800px" >
             <div class="btn" style="padding: 9px 12px;">
                  <div class="Text">
-                     <u>ЖАЛОБА</u>
+                     <u>Пожаловаться</u>
                  </div>
             </div>
         </a>

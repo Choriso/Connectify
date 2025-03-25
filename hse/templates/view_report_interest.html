@@ -10,6 +10,13 @@
                 {{interests.title}}
             </div>
             </a>
+                <a href="/interest_delete/{{ interests.id }}" style="color: black">
+                <div class="btn" style="padding: 9px 12px;">
+                    <div class="Text">
+                        <u>Удалить</u>
+                    </div>
+                </div>
+            </a>
             <div class="Preview"
                  style="margin-block-end: 16px; overflow: visible; width: 666px; padding: 16px; background: #fbfbfbc2; border-radius: 12px; border: 1px #E4E5E9 solid">
                 <div class="Text" style="max-width: 924px; word-wrap: break-word;">
@@ -23,6 +30,7 @@
                     </div>
                 </div>
                 </a>
+
     </div>
     <div class="figure">
         <img src="{{ url_for('static', filename='images/waves.svg') }}" alt="Ваше изображение"

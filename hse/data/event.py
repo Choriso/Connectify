@@ -11,7 +11,7 @@ class Event(SqlAlchemyBase):
     description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     date_begin = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     date_end = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    #image = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    image_path = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     place = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     user_id = sqlalchemy.Column(sqlalchemy.Integer,
                                 sqlalchemy.ForeignKey("users.id"))

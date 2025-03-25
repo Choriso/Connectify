@@ -230,7 +230,8 @@ def profile():
     db_sess = session.create_session()
     user = db_sess.query(User).get(current_user.id)
     interest = db_sess.query(Interest).filter(Interest.user == current_user)
-    return render_template('profile.html', title='Профиль', interest=interest, current_user=current_user)
+    event = db_sess.query(Event).filter(Event.user == current_user)
+    return render_template('profile.html', title='Профиль', interest=interest, current_user=current_user, events=event)
 
 
 '''
@@ -276,6 +277,13 @@ def process_interest():
     interest = Interest()
     interest.title = title
     interest.description = description
+    # image
+    photo = request.files['file']
+    print(photo)
+    photo_path = os.path.join(app.config['UPLOAD_FOLDER'], photo.filename)
+    photo.save(photo_path)
+    interest.image_path = photo_path
+    # session
     current_user.interests.append(interest)
     db_sess.merge(current_user)
     db_sess.commit()
@@ -320,7 +328,6 @@ def interests_delete(id):
     print(5)
     db_sess = session.create_session()
     interest = db_sess.query(Interest).filter(Interest.id == id,
-                                              Interest.user == current_user
                                               ).first()
     if interest:
         db_sess.delete(interest)
@@ -359,7 +366,7 @@ def viewEvent():
     user_id = request.args.get('user_id')
     event_id = request.args.get('event_id')
     db_sess = session.create_session()
-    events = db_sess.query(Interest).filter(Interest.id == event_id).first()
+    events = db_sess.query(Event).filter(Event.id == event_id).first()
     user = db_sess.query(User).get(user_id)
     return render_template('view_event.html', title="", events=events, user=user)
 
@@ -379,6 +386,7 @@ def process_event():
     date_end = request.form['date_end']
     place = request.form['place']
     print(title, description, date_begin, date_end, place)
+
     db_sess = session.create_session()
     event = Event()
     event.title = title
@@ -386,41 +394,16 @@ def process_event():
     event.date_begin = date_begin
     event.date_end = date_end
     event.place = place
+    # image
+    photo = request.files['file']
+    print(photo)
+    photo_path = os.path.join(app.config['UPLOAD_FOLDER'], photo.filename)
+    photo.save(photo_path)
+    event.image_path = photo_path
     current_user.events.append(event)
     db_sess.merge(current_user)
     db_sess.commit()
     return redirect('/index_event')
-
-
-# # редактирование интереса
-# @app.route('/interest/<int:id>', methods=['GET', 'POST'])
-# @login_required
-# def edit_interests(id):
-#     form = InterestForm()
-#     if request.method == "GET":
-#         db_sess = session.create_session()
-#         interest = db_sess.query(Interest).filter(Interest.id == id, Interest.user == current_user).first()
-#         if interest:
-#             form.title.data = interest.title
-#             form.description.data = interest.description
-#             form.tags.data = interest.tags
-#         else:
-#             abort(404)
-#     if form.validate_on_submit():
-#         db_sess = session.create_session()
-#         interest = db_sess.query(Interest).filter(Interest.id == id, Interest.user == current_user).first()
-#         if interest:
-#             interest.title = form.title.data
-#             interest.description = form.description.data
-#             interest.tags = form.tags.data
-#             db_sess.commit()
-#             return redirect('/')
-#         else:
-#             abort(404)
-#     return render_template('interest.html',
-#                            title='Редактирование интереса',
-#                            form=form
-#                            )
 
 
 @app.route('/event_delete/<int:id>', methods=['GET', 'POST'])
@@ -468,8 +451,7 @@ def viewReportInteres():
 def admin():
     db_sess = session.create_session()
     report = db_sess.query(Report)
-    appelation = db_sess.query(Appelation)
-    return render_template("admin.html", appelations=appelation, reports=report)
+    return render_template("admin.html", reports=report)
 
 
 @app.route('/viewReport', methods=['GET'])
@@ -516,9 +498,7 @@ def process_report():
 @login_required
 def reports_delete(id):
     db_sess = session.create_session()
-    report = db_sess.query(Report).filter(Report.id == id,
-                                              Report.user == current_user
-                                              ).first()
+    report = db_sess.query(Report).filter(Report.id == id).first()
     if report:
         db_sess.delete(report)
         db_sess.commit()
@@ -528,26 +508,15 @@ def reports_delete(id):
     if previous_page:
         return redirect(previous_page)
     else:
-        return redirect(url_for('index'))
+        return redirect(url_for('admin'))
 
-#
-# '''
-#
-#
-#
-#                                                        АППЕЛЯЦИИ
-#
-#
-#
-# '''
-#
-#
-# # добавление аппеляции
-# @app.route('/appelation', methods=['GET', 'POST'])
-# @login_required
-# def add_interests():
-#     return render_template('interest.html', title='Добавление интереса')
-#
+# добавление жалобы
+@app.route('/report_event', methods=['GET', 'POST'])
+@login_required
+def report_event():
+    print(1)
+
+    return render_template('report_event.html', title='Добавление жалобы')
 """
 
 

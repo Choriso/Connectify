@@ -16,11 +16,12 @@
                     {{events.description}}
                 </div>
             </div>
-        <a style="color: black">
-            <div class="Text" style="width: 666px; font-weight: bold; text-align: center">
-                {{events.date_begin}}
+            <div class="Preview"
+                 style="margin-block-end: 16px; overflow: visible; width: 666px; padding: 16px; background: #fbfbfbc2; border-radius: 12px; border: 1px #E4E5E9 solid">
+                <div class="Text" style="max-width: 924px; word-wrap: break-word;">
+                    {{events.date_begin}}
+                </div>
             </div>
-            </a>
             <div class="Preview"
                  style="margin-block-end: 16px; overflow: visible; width: 666px; padding: 16px; background: #fbfbfbc2; border-radius: 12px; border: 1px #E4E5E9 solid">
                 <div class="Text" style="max-width: 924px; word-wrap: break-word;">
@@ -66,7 +67,7 @@
         <img src="{{ url_for('static', filename='images/waves_2.svg') }}" alt="Ваше изображение"
              style="right: 62%; top: -20%; position: fixed; height: 700px; width: 700x; z-index: -1;">
     </div>
-
+    <img src="{{events.image_path}}" style="width: 200px; height: 200px; border-radius: 100px;" alt="Image">
 </div>
 <script>
     function cancel() {

@@ -87,6 +87,45 @@
 </div>
 
 {% endfor %}
+<div class="Text" style="position: relative; font-size: 31px; font-weight: bold; left: 35%;">Мои События</div>
+{% for item in events %}
+<div style="overflow: visible; margin-top: 10px; position: relative; background: #d1d7dda3; border-radius: 16px; flex-direction: column; justify-content: flex-start; align-items: flex-start; display: inline-flex; padding: 16px">
+    <div class="event-main-info"
+         style="overflow: visible; width: 959px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 12px; display: inline-flex">
+        <a href="/viewProfile?user_id={{ item.user.id }}" style="color: black">
+            <div class="Text" style="font-weight: bold;">
+                {{item.user.name}} - {{item.title}}
+            </div>
+            <div class="Preview"
+                 style="margin-block-end: 16px; overflow: visible; width: 959px; padding: 16px; background: #fbfbfbc2; border-radius: 12px; border: 1px #E4E5E9 solid">
+                <div class="Text" style="max-width: 924px; word-wrap: break-word;">
+                    {{item.description}}
+                </div>
+                <div class="Text" style="max-width: 924px; word-wrap: break-word;">
+                    {{item.date_begin}}
+                </div>
+                <div class="Text" style="max-width: 924px; word-wrap: break-word;">
+                    {{item.date_end}}
+                </div>
+                <div class="Text" style="max-width: 924px; word-wrap: break-word;">
+                    {{item.place}}
+                </div>
+            <img src="{{item.image_path}}" style="width: 200px; height: 200px; border-radius: 100px;" alt="Image">
+            </div>
+        </a>
+        <a href="/event_delete/{{ item.id }}" style="color: black">
+                <div class="btn" style="padding: 9px 12px;">
+                    <div class="Text">
+                        <u>Удалить</u>
+                    </div>
+                </div>
+            </a>
+    </div>
+</div>
+{% if current_user.is_authenticated and current_user == item.user %}
+
+{% endif %}
+{% endfor %}
 <div id="edit-container" class="edit-container">
     <button id="save-btn" class="btn-save-bg" style="position: static">Сохранить</button>
     <button id="cancel-btn" class="btn-cansel-bg" style="position: static">Отмена</button>

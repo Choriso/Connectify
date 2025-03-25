@@ -33,5 +33,6 @@ class User(SqlAlchemyBase, UserMixin):
     image_path = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     interests = orm.relationship("Interest", back_populates='user')
     events = orm.relationship("Event", back_populates='user')
-    # reports = orm.relationship("Report", back_populates='user')
+    # banned =
+    # admin
 

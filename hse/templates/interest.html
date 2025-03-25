@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form method="POST" action="/process_interest" class="form-container">
+<form method="POST" action="/process_interest" class="form-container" enctype="multipart/form-data">
     <div class="background"></div>
     <div class="Text" style="left: 20px; top: 17px; position: absolute; color: black; font-size: 20px; word-wrap: break-word;">
         Название:
@@ -10,7 +10,7 @@
     <div class="Text" style="left: 16px; top: 118px; position: absolute; color: black; font-size: 20px; word-wrap: break-word">
         Описание:
     </div>
-    <textarea id="description" name="description" , class="desc-input"></textarea>
+    <textarea id="description" name="description" class="desc-input"></textarea>
     <div class="btn-save">
         <a href="/">
             <div class="btn-save-bg">

@@ -1,34 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form method="POST" action="/process_event" class="form-container" enctype="multipart/form-data">
+<form method="POST" action="/" class="form-container">
     <div class="background"></div>
     <div class="Text" style="left: 20px; top: 17px; position: absolute; color: black; font-size: 20px; word-wrap: break-word;">
         Название:
     </div>
     <input type="text" id="title" name="title" class="name-input">
-    <div class="Text" style="left: 20px; top: 17px; position: absolute; color: black; font-size: 20px; word-wrap: break-word;">
-        Дата начала:
-    </div>
-    <div class="Text" style="left: 20px; top: 17px; position: absolute; color: black; font-size: 20px; word-wrap: break-word;">
-        Дата окончания:
-    </div>
-    <input type="text" id="place" name="place" class="name-input">
-    <div class="Text" style="left: 16px; top: 118px; position: absolute; color: black;font-size: 20px; word-wrap: break-word">
-        Адрес:
-    </div>
     <div class="Text" style="left: 16px; top: 118px; position: absolute; color: black; font-size: 20px; word-wrap: break-word">
         Описание:
     </div>
-    <textarea id="description" name="description" class="desc-input"></textarea>
-    <input type="file" class="form-control-file" id="image" name="file">
+    <textarea id="description" name="description" , class="desc-input"></textarea>
     <div class="btn-save">
-        <a href="/index_event">
             <div class="btn-save-bg">
                 <input type="submit" value="Сохранить" class="Text"
                        style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);color: #1f1f1f; font-size: 20px; border: transparent; background: transparent;">
             </div>
-        </a>
     </div>
     <div class="btn-cansel">
         <div class="btn-cansel-bg"
