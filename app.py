@@ -5,6 +5,7 @@ from flask import redirect, make_response, session, abort, url_for, Flask, rende
 from data.user import User
 from data.interest import Interest
 from data.message import Message
+from data.chat import Chat
 from forms.interest import InterestForm
 from forms.user import RegisterForm, LoginForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
@@ -307,9 +308,129 @@ def session_test():
         f"Вы пришли на эту страницу {visits_count + 1} раз")
 
 
-@app.route("/chat")
-def chat():
-    return render_template("chat.html")
+@app.route("/chat", methods=["GET"])
+@login_required
+def all_chats():
+    db_sess = session.create_session()
+
+    # Получаем все чаты для текущего пользователя
+    chats = get_user_chats(current_user.id)  # Функция для получения всех чатов текущего пользователя
+
+    # Для каждого чата, получаем последние сообщения
+    chat_data = []
+    for chat in chats:
+        last_message = get_last_message(chat.id)  # Функция для получения последнего сообщения в чате
+        chat_data.append({
+            'chat_id': chat.id,
+            'chat_name': get_chat_name(chat, current_user.id),  # Имя второго пользователя в чате
+            'last_message': last_message.text if last_message else None,
+            'timestamp': last_message.timestamp if last_message else None
+        })
+
+    # Если есть хотя бы один чат, выберем первый, чтобы сразу отобразить его
+    default_chat_id = chat_data[0]['chat_id'] if chat_data else None
+
+    return render_template("all_chats.html", chat_data=chat_data, default_chat_id=default_chat_id)
+
+
+def get_chat_name(chat_id, current_user_id):
+    db_sess = session.create_session()
+
+    # Получаем пользователей, участвующих в чате
+    chat = db_sess.query(Chat).filter(Chat.id == chat_id).first()
+
+    if not chat:
+        return None
+
+    # Получаем пользователей, связанные с этим чатом
+    user1 = db_sess.query(User).filter(User.id == chat.user1_id).first()
+    user2 = db_sess.query(User).filter(User.id == chat.user2_id).first()
+
+    # Проверяем, чей чат и на основе этого возвращаем имя
+    if current_user_id == user1.id:
+        return user2.name
+    else:
+        return user1.name
+
+
+def get_last_message(chat_id):
+    db_sess = session.create_session()
+
+    # Получаем последнее сообщение в чате
+    last_message = db_sess.query(Message).filter(Message.chat_id == chat_id) \
+        .order_by(Message.timestamp.desc()).first()
+
+    return last_message
+
+
+def get_user_chats(user_id):
+    db_sess = session.create_session()
+
+    # Получаем все чаты, в которых участвует данный пользователь (user_id)
+    participant_chats = db_sess.query(Chat).filter(
+        (Chat.user1_id == user_id) | (Chat.user2_id == user_id)
+    ).all()
+
+    # Список для хранения информации о чатах
+    chats = []
+
+    # Проходим по каждому чату
+    for chat in participant_chats:
+        # Получаем ID другого участника чата
+        other_user_id = chat.user2_id if chat.user1_id == user_id else chat.user1_id
+
+        # Получаем данные другого участника
+        other_user = db_sess.query(User).filter(User.id == other_user_id).first()
+
+        # Получаем последнее сообщение в чате
+        last_message = db_sess.query(Message).filter(Message.chat_id == chat.id).order_by(
+            Message.timestamp.desc()).first()
+
+        # Собираем данные о чате
+        chats.append({
+            'chat_id': chat.id,
+            'chat_name': other_user.name,  # Имя второго участника чата
+            'last_message': last_message.content if last_message else None,  # Последнее сообщение
+            'timestamp': last_message.timestamp if last_message else None,  # Время последнего сообщения
+            'message_type': last_message.message_type if last_message else None  # Тип последнего сообщения
+        })
+
+    return chats
+
+
+@app.route("/chat/messages/<int:chat_id>", methods=["GET"])
+@login_required
+def chat_messages(chat_id):
+    db_sess = session.create_session()
+    messages = db_sess.query(Message).filter(Message.chat_id == chat_id).all()
+
+    messages_data = [{
+        'text': message.text,
+        'type': 'sent' if message.sender_id == current_user.id else 'received'
+    } for message in messages]
+
+    # Получаем имя второго участника чата для отображения в заголовке
+    chat_name = get_chat_name(chat_id, current_user.id)
+
+    return jsonify({'messages': messages_data, 'chat_name': chat_name})
+
+
+@app.route("/messages", methods=["GET"])
+def get_messages():
+    """Получение всех сообщений из БД"""
+    db_sess = session.create_session()
+
+    # Получаем все сообщения, сортируя по timestamp (от новых к старым)
+    messages = db_sess.execute(
+        sa.select(Message).order_by(Message.timestamp.asc())
+    ).scalars().all()
+
+    return jsonify([{
+        "id": msg.id,
+        "content": msg.content,
+        "message_type": msg.message_type,
+        "timestamp": msg.timestamp.isoformat() if msg.timestamp else None
+    } for msg in messages])
 
 
 @socketio.on("send_message")
@@ -340,52 +461,31 @@ def handle_message(data):
 # Отправка сообщения
 @app.route("/messages", methods=["POST"])
 def send_message():
-    """Отправка нового сообщения в БД"""
     data = request.json
-    author = data.get("author", "Аноним")
+    author_id = current_user.id
+    recipient_id = data.get("recipient_id")  # ID получателя
     content = data.get("content", "")
-    file_url = data.get("file_url", None)
     message_type = data.get("type", "text")
 
-    db_sess = session.create_session()
+    chat_id = get_or_create_chat(author_id, recipient_id)
 
-    # Создаём объект сообщения
+    db_sess = session.create_session()
     new_message = Message(
-        author=author,
+        chat_id=chat_id,
+        author_id=author_id,
         content=content,
-        file_url=file_url,
         message_type=message_type
     )
-
-    # Добавляем в сессию и сохраняем в БД
     db_sess.add(new_message)
     db_sess.commit()
 
     return jsonify({"status": "ok", "message": {
         "id": new_message.id,
-        "author": new_message.author,
+        "chat_id": chat_id,
+        "author_id": new_message.author_id,
         "content": new_message.content,
-        "file_url": new_message.file_url,
         "message_type": new_message.message_type
     }})
-
-
-@app.route("/messages", methods=["GET"])
-def get_messages():
-    """Получение всех сообщений из БД"""
-    db_sess = session.create_session()
-
-    # Получаем все сообщения, сортируя по timestamp (от новых к старым)
-    messages = db_sess.execute(
-        sa.select(Message).order_by(Message.timestamp.asc())
-    ).scalars().all()
-
-    return jsonify([{
-        "id": msg.id,
-        "content": msg.content,
-        "message_type": msg.message_type,
-        "timestamp": msg.timestamp.isoformat() if msg.timestamp else None
-    } for msg in messages])
 
 
 # Изменение сообщения
@@ -470,6 +570,39 @@ def upload_file():
 @app.route("/uploads/<filename>")
 def get_uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+
+
+def get_or_create_chat(user1_id, user2_id):
+    db_sess = session.create_session()
+    chat = db_sess.execute(
+        sa.select(Chat).where(
+            ((Chat.user1_id == user1_id) & (Chat.user2_id == user2_id)) |
+            ((Chat.user1_id == user2_id) & (Chat.user2_id == user1_id))
+        )
+    ).scalar()
+
+    if not chat:
+        chat = Chat(user1_id=user1_id, user2_id=user2_id)
+        db_sess.add(chat)
+        db_sess.commit()
+
+    return chat.id
+
+
+@app.route("/messages/<int:chat_id>", methods=["GET"])
+def get_chat_messages(chat_id):
+    db_sess = session.create_session()
+    messages = db_sess.execute(
+        sa.select(Message).where(Message.chat_id == chat_id).order_by(Message.timestamp.asc())
+    ).scalars().all()
+
+    return jsonify([{
+        "id": msg.id,
+        "author_id": msg.author_id,
+        "content": msg.content,
+        "message_type": msg.message_type,
+        "timestamp": msg.timestamp.isoformat() if msg.timestamp else None
+    } for msg in messages])
 
 
 if __name__ == "__main__":

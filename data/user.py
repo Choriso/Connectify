@@ -25,5 +25,7 @@ class User(SqlAlchemyBase, UserMixin):
     connection = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     image_path = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     allow_location = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+
     interests = orm.relationship("Interest", back_populates='user')
+    messages = orm.relationship("Message", back_populates="author")
 

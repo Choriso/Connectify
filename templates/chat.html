@@ -106,27 +106,31 @@
             <a class="btn" href="/chat">Чат</a>
             <a class="btn" href="/profile">Профиль</a>
             <a class="btn" href="/interest">Создать интерес</a>
-
         </div>
     </div>
+
     <div class="chat-container">
         <!-- Список чатов -->
         <div class="chat-list">
             <h3>Диалоги</h3>
             <ul>
-                <li class="chat-item selected">Контакт 1</li>
-                <li class="chat-item">Контакт 2</li>
-                <li class="chat-item">Контакт 3</li>
+                {% for chat in chats %}
+                    <li class="chat-item {% if chat.selected %}selected{% endif %}" data-chat-id="{{ chat.id }}">
+                        {{ chat.name }}
+                    </li>
+                {% endfor %}
             </ul>
         </div>
-        
+
         <!-- Окно чата -->
         <div class="chat-box">
-            <div class="chat-header">Контакт 1</div>
+            <div class="chat-header">{{ chat.name }}</div>
             <div class="chat-messages" id="chat">
-                <div class="message received">Привет!</div>
-                <div class="message sent">Привет, как дела?</div>
-                <div class="message received">Все отлично, спасибо!</div>
+                {% for message in messages %}
+                    <div class="message {% if message.sent_by_user %}sent{% else %}received{% endif %}">
+                        {{ message.text }}
+                    </div>
+                {% endfor %}
             </div>
             <div class="chat-input">
                 <input type="text" id="messageInput" placeholder="Введите сообщение...">
@@ -136,5 +140,82 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Обработчик клика по чату
+        document.querySelectorAll('.chat-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const chatId = this.getAttribute('data-chat-id');
+                loadChatMessages(chatId); // Функция для загрузки сообщений для выбранного чата
+                updateSelectedChat(chatId);
+            });
+        });
+
+        function loadChatMessages(chatId) {
+            // Выполнить запрос на сервер для получения сообщений этого чата
+            fetch(`/chat/messages/${chatId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const chatMessagesDiv = document.getElementById('chat');
+                    chatMessagesDiv.innerHTML = '';
+                    data.messages.forEach(message => {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.classList.add('message');
+                        if (message.sent_by_user) {
+                            messageDiv.classList.add('sent');
+                        } else {
+                            messageDiv.classList.add('received');
+                        }
+                        messageDiv.textContent = message.text;
+                        chatMessagesDiv.appendChild(messageDiv);
+                    });
+                });
+        }
+
+        function updateSelectedChat(chatId) {
+            document.querySelectorAll('.chat-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            document.querySelector(`.chat-item[data-chat-id='${chatId}']`).classList.add('selected');
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const messageText = messageInput.value.trim();
+            if (messageText) {
+                // Отправить сообщение на сервер
+                fetch('/chat/send', {
+                    method: 'POST',
+                    body: JSON.stringify({ text: messageText }),
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          messageInput.value = '';
+                          loadChatMessages(data.chatId);  // Обновить сообщения
+                      }
+                  });
+            }
+        }
+
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (file) {
+                // Загрузить файл на сервер
+                const formData = new FormData();
+                formData.append('file', file);
+                fetch('/chat/upload', {
+                    method: 'POST',
+                    body: formData
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          loadChatMessages(data.chatId);  // Обновить сообщения
+                      }
+                  });
+            }
+        }
+    </script>
 </body>
 </html>
